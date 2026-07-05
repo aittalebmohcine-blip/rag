@@ -1,0 +1,14 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Do not include large data files, model weights, or generated outputs in your repository.
+datasets_public
+vllm-0.10.1    
