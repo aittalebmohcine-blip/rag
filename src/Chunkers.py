@@ -11,7 +11,7 @@ class TextChunker(Chunker):
             chunk = Chunk(
                 text=text[i:end],
                 start=i,
-                end=end,
+                end=end - 1,
             )
             chunks.append(chunk)
             if i + self.chunk_size >= len(text):
