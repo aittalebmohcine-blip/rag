@@ -1,10 +1,14 @@
 .PHONY: install run debug clean
 
+k ?= 2
+
 install:
 	uv sync
 
-run:
-	uv run python -m src
+search:
+	uv run python -m src search $(q) -k $(k)
+index:
+	uv run python -m src index
 
 debug:
 	uv run python -m pdb src
