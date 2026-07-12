@@ -1,7 +1,8 @@
 import json
+from pathlib import Path
+import argparse
 
 import bm25s
-from pathlib import Path
 from tqdm import tqdm
 
 from .Chunkers import TextChunker
@@ -74,19 +75,64 @@ def save_index(retriever: bm25s.BM25, output_dir: Path) -> None:
     retriever.save(str(output_dir / "bm25_index"))
 
 
-def main() -> None:
-    target_dir = Path("/home/mait-tal/Documents/rag1/vllm-0.10.1")
-    output_dir = Path("data/processed/")
+def search(
+    query: str,
+    retriever: bm25s.BM25,
+    k: int = 5,
+):
+    query_tokens = bm25s.tokenize(query)
+    return retriever.retrieve(query_tokens, k=k)
 
-    files = collect_files(target_dir, TEXT_EXTENSIONS | CODE_EXTENSIONS)
 
-    chunks = chunk_repository(files, 2000, 20)
+def load_chunks(chunks_path: Path) -> list[Chunk]:
+    with chunks_path.open() as f:
+        return json.load(f)
+
+
+def index_repository(
+    repository: Path,
+    output_dir: Path,
+    chunk_size: int,
+    overlap: int,
+) -> None:
+    files = collect_files(repository, TEXT_EXTENSIONS | CODE_EXTENSIONS)
+
+    chunks = chunk_repository(files, chunk_size, overlap)
 
     save_chunks(chunks, output_dir)
 
     retriever = build_bm25(chunks)
 
     save_index(retriever, output_dir)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Retrieval Augmented Generation")
+
+    subparsers = parser.add_subparsers(
+        dest="command",
+        required=True,
+    )
+
+    subparsers.add_parser("index")
+
+    search_parser = subparsers.add_parser("search")
+    search_parser.add_argument("query")
+    search_parser.add_argument("-k", type=int, default=5)
+
+    args = parser.parse_args()
+
+    target_dir = Path("/home/mait-tal/Documents/rag1/test")
+    output_dir = Path("data/processed/")
+
+    if args.command == "index":
+        index_repository(target_dir, output_dir, 2000, 20)
+        return
+
+    retriever = bm25s.BM25.load(output_dir / "bm25_index")
+    chunks = load_chunks(output_dir / "chunks.json")
+
+    docs, scores = search(args.query, retriever, args.k)
 
 
 if __name__ == "__main__":
