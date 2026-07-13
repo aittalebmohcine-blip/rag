@@ -5,7 +5,7 @@ import argparse
 import bm25s
 from tqdm import tqdm
 
-from .Chunkers import TextChunker
+from .Chunkers import PythonChunker, TextChunker
 from .Chunk import Chunk
 
 TEXT_EXTENSIONS = {".md", ".txt"}
@@ -30,7 +30,7 @@ def chunk_repository(
 ) -> list[Chunk]:
 
     text_chunker: TextChunker = TextChunker(chunk_size, overlap)
-    python_chunker = text_chunker  # temporary
+    python_chunker = PythonChunker(chunk_size, overlap)  # temporary
     all_chunks: list[Chunk] = []
 
     for file in tqdm(files, desc="Chunking"):
