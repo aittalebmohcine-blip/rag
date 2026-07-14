@@ -6,7 +6,7 @@ install:
 	uv sync
 
 search:
-	uv run python -m src search $(q) -k $(k)
+	uv run python -m src search "$(q)" -k $(k)
 index:
 	uv run python -m src index
 
