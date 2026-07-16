@@ -23,18 +23,46 @@ class TextChunker(Chunker):
         return chunks
 
 
+# TODO:
+# - Split oversized functions/classes (> chunk_size)
+# - Merge small module-level statements (imports, constants)
+# - Preserve node metadata (FunctionDef/ClassDef)
+# - Consider docstrings separately
 class PythonChunker(Chunker):
     def chunk(self, text: str) -> list[Chunk]:
-        code_lines = text.splitlines()
-        tree = ast.parse(text)
-        chunks = []
+        try:
+            tree = ast.parse(text)
+        except SyntaxError:
+            return TextChunker(self.chunk_size, self.overlap).chunk(text)
+
+        # Pre-calculate the starting character index for every line
+        code_lines = text.splitlines(keepends=True)
+        line_offsets = [0]
+        for line in code_lines:
+            line_offsets.append(line_offsets[-1] + len(line))
+
+        chunks: list[Chunk] = []
 
         for node in tree.body:
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                start_line = node.lineno + 1
-                end_line = node.end_lineno
-                chunk_text = "/n".join(code_lines[start_line:end_line])
-                if end_line is not None:
-                    chunk = Chunk(text=chunk_text, start=start_line, end=end_line)
-                    chunks.append(chunk)
+            start_char, end_char = self.get_absolute_char_positions(node, line_offsets)
+            chunk = Chunk(
+                text=text[start_char:end_char], start=start_char, end=end_char
+            )
+            chunks.append(chunk)
         return chunks
+
+    @staticmethod
+    def get_absolute_char_positions(
+        node: ast.stmt, line_offsets: list[int]
+    ) -> tuple[int, int]:
+        # ast lines are 1-indexed; convert to 0-indexed index
+        start_line_idx = node.lineno - 1
+        start_col = node.col_offset
+        start_char = line_offsets[start_line_idx] + start_col
+
+        # Fallback to the end of the text if end coordinates are missing
+        end_line_idx = getattr(node, "end_lineno", len(line_offsets)) - 1
+        end_col = getattr(node, "end_col_offset", 0)
+        end_char = line_offsets[end_line_idx] + end_col
+
+        return start_char, end_char
