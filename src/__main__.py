@@ -57,7 +57,7 @@ def save_chunks(chunks: list[Chunk], output_dir: Path) -> None:
     json_ready_list = [chunk.model_dump(mode="json") for chunk in chunks]
     chunks_path = output_dir / "chunks.json"
     with chunks_path.open("w", encoding="utf-8") as f:
-        json.dump(json_ready_list, f, indent=4)
+        json.dump(json_ready_list, f, indent=6)
 
 
 def build_bm25(chunks: list[Chunk]) -> bm25s.BM25:
@@ -107,6 +107,7 @@ def index_repository(
 
 
 def main() -> None:
+    # ----- cli ------#
     parser = argparse.ArgumentParser(description="Retrieval Augmented Generation")
 
     subparsers = parser.add_subparsers(
@@ -121,18 +122,35 @@ def main() -> None:
     search_parser.add_argument("-k", type=int, default=5)
 
     args = parser.parse_args()
+    # -----------#
 
-    target_dir = Path("/home/mait-tal/Documents/rag1/test")
+    target_dir = Path("/home/mait-tal/Documents/rag1/vllm-0.10.1")
     output_dir = Path("data/processed/")
 
+    # ----- indexing ------#
     if args.command == "index":
         index_repository(target_dir, output_dir, 2000, 20)
         return
+    # -----------#
 
+    # ----- retrieving ------#
     retriever = bm25s.BM25.load(output_dir / "bm25_index")
     chunks = load_chunks(output_dir / "chunks.json")
 
     docs, scores = search(args.query, retriever, args.k)
+
+    found_chunks = [chunks[i] for i in docs[0]]
+    coresponding_scores = [round(float(s), 2) for s in scores[0]]
+    # -----------#
+
+    for c, s in zip(found_chunks, coresponding_scores):
+        print(f"Score: {s}\n")
+        print(f"File:\n {c['file_path']}\n")
+        print(f"Characters:\n {c['start']}-{c['end']}")
+        print("-" * 20)
+        print(f"{c['text']}")
+        print("-" * 20)
+        print()
 
 
 if __name__ == "__main__":
