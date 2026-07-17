@@ -1,5 +1,4 @@
 import ast
-from tracemalloc import start
 
 from .Chunker import Chunker
 from .Chunk import Chunk
@@ -44,7 +43,9 @@ class PythonChunker(Chunker):
         chunks: list[Chunk] = []
 
         for node in tree.body:
-            start_char, end_char = self.get_absolute_char_positions(node, line_offsets)
+            start_char, end_char = self.get_absolute_char_positions(
+                node, line_offsets
+            )
             chunk = Chunk(
                 text=text[start_char:end_char], start=start_char, end=end_char
             )
