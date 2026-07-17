@@ -1,3 +1,4 @@
+from typing import Any
 import json
 from pathlib import Path
 import argparse
@@ -7,6 +8,7 @@ from tqdm import tqdm
 
 from .Chunkers import PythonChunker, TextChunker
 from .Chunk import Chunk
+from .MinimalSource import MinimalSource
 
 TEXT_EXTENSIONS = {".md", ".txt"}
 CODE_EXTENSIONS = {".py"}
@@ -54,6 +56,7 @@ def chunk_repository(
 
 def save_chunks(chunks: list[Chunk], output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
+
     json_ready_list = [chunk.model_dump(mode="json") for chunk in chunks]
     chunks_path = output_dir / "chunks.json"
     with chunks_path.open("w", encoding="utf-8") as f:
@@ -79,14 +82,14 @@ def search(
     query: str,
     retriever: bm25s.BM25,
     k: int = 5,
-):
+) -> Any:
     query_tokens = bm25s.tokenize(query)
     return retriever.retrieve(query_tokens, k=k)
 
 
 def load_chunks(chunks_path: Path) -> list[Chunk]:
     with chunks_path.open() as f:
-        return json.load(f)
+        return [Chunk(**obj) for obj in json.load(f)]
 
 
 def index_repository(
@@ -106,9 +109,27 @@ def index_repository(
     save_index(retriever, output_dir)
 
 
+def print_search_results(
+    sources: list[MinimalSource],
+    retrieval_scores: list[float],
+) -> None:
+    for c, s in zip(sources, retrieval_scores):
+        print(f"Score: {s}\n")
+        print(f"File:\n {c.file_path}\n")
+        print(
+            f"Characters:\n {c.first_character_index}-{c.last_character_index}"
+        )
+        print("-" * 20)
+        print(f"{c.text}")
+        print("-" * 20)
+        print()
+
+
 def main() -> None:
     # ----- cli ------#
-    parser = argparse.ArgumentParser(description="Retrieval Augmented Generation")
+    parser = argparse.ArgumentParser(
+        description="Retrieval Augmented Generation"
+    )
 
     subparsers = parser.add_subparsers(
         dest="command",
@@ -139,18 +160,16 @@ def main() -> None:
 
     docs, scores = search(args.query, retriever, args.k)
 
-    found_chunks = [chunks[i] for i in docs[0]]
-    coresponding_scores = [round(float(s), 2) for s in scores[0]]
+    doc_ids = docs[0]
+    doc_scores = scores[0]
+
+    found_chunks = [chunks[i] for i in doc_ids]
+    retrieval_scores = [round(float(s), 2) for s in doc_scores]
     # -----------#
 
-    for c, s in zip(found_chunks, coresponding_scores):
-        print(f"Score: {s}\n")
-        print(f"File:\n {c['file_path']}\n")
-        print(f"Characters:\n {c['start']}-{c['end']}")
-        print("-" * 20)
-        print(f"{c['text']}")
-        print("-" * 20)
-        print()
+    sources = [chunk.to_minimal_source() for chunk in found_chunks]
+
+    print_search_results(sources, retrieval_scores)
 
 
 if __name__ == "__main__":
