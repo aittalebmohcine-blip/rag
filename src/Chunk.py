@@ -7,7 +7,7 @@ class Chunk(BaseModel):
     text: str
     start: int = Field(ge=0)
     end: int = Field(ge=0)
-    file_path: str
+    file_path: str | None = None
 
     def to_minimal_source(self) -> MinimalSource:
         return MinimalSource(

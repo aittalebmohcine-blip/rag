@@ -140,12 +140,14 @@ def main() -> None:
 
     search_parser = subparsers.add_parser("search")
     search_parser.add_argument("query")
-    search_parser.add_argument("-k", type=int, default=5)
+    search_parser.add_argument("--k", type=int, default=5)
+
+    subparsers.add_parser("search_dataset")
 
     args = parser.parse_args()
     # -----------#
 
-    target_dir = Path("/home/mait-tal/Documents/rag1/vllm-0.10.1")
+    target_dir = Path("/home/mait-tal/Documents/rag/vllm-0.10.1")
     output_dir = Path("data/processed/")
 
     # ----- indexing ------#
@@ -154,22 +156,37 @@ def main() -> None:
         return
     # -----------#
 
-    # ----- retrieving ------#
     retriever = bm25s.BM25.load(output_dir / "bm25_index")
     chunks = load_chunks(output_dir / "chunks.json")
+    # ----- one question retrieving ------#
+    if args.command == "search":
+        # TODO:
+        # - put the retrieving logic in a separet funtion
+        #   (maybe edit search return sources directly)
+        docs, scores = search(args.query, retriever, args.k)
 
-    docs, scores = search(args.query, retriever, args.k)
+        doc_ids = docs[0]
+        doc_scores = scores[0]
 
-    doc_ids = docs[0]
-    doc_scores = scores[0]
+        found_chunks = [chunks[i] for i in doc_ids]
+        retrieval_scores = [round(float(s), 2) for s in doc_scores]
 
-    found_chunks = [chunks[i] for i in doc_ids]
-    retrieval_scores = [round(float(s), 2) for s in doc_scores]
+        # ----- convert and print ------#
+        sources = [chunk.to_minimal_source() for chunk in found_chunks]
+
+        print_search_results(sources, retrieval_scores)
+        # -----------#
     # -----------#
 
-    sources = [chunk.to_minimal_source() for chunk in found_chunks]
-
-    print_search_results(sources, retrieval_scores)
+    # ----- search dataset ------#
+    if args.command == "search_dataset":
+        dataset_docs_file = ("/home/mait-tal/Documents/rag/datasets_public/"
+                             "public/UnansweredQuestions/"
+                             "dataset_docs_public.json")
+        dataset_docs_path = Path(dataset_docs_file)
+        with dataset_docs_path.open("r") as dp:
+            data = json.load(dp)
+        questions = [element["question"] for element in data["rag_questions"]]
 
 
 if __name__ == "__main__":
