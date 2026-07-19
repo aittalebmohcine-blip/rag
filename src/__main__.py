@@ -84,7 +84,10 @@ def search(
     k: int = 5,
 ) -> Any:
     query_tokens = bm25s.tokenize(query)
-    return retriever.retrieve(query_tokens, k=k)
+    docs, scores = retriever.retrieve(query_tokens, k=k)
+    doc_ids = docs[0]
+    doc_scores = scores[0]
+    return doc_ids, doc_scores
 
 
 def load_chunks(chunks_path: Path) -> list[Chunk]:
@@ -125,6 +128,29 @@ def print_search_results(
         print()
 
 
+def searcher(
+    query: str,
+    retriever: bm25s.BM25,
+    k: int,
+    chunks: list[Chunk]
+) -> tuple[list[MinimalSource], list[int]]:
+    doc_ids, doc_scores = search(query, retriever, k)
+
+    found_chunks = [chunks[i] for i in doc_ids]
+    retrieval_scores = [round(float(s), 2) for s in doc_scores]
+
+    # ----- convert ------#
+    sources = [chunk.to_minimal_source() for chunk in found_chunks]
+
+    return sources, retrieval_scores
+
+
+def load_questions(path: Path) -> list[dict[str, str]]:
+    with path.open("r") as dp:
+        data = json.load(dp)
+        return data["rag_questions"]
+
+
 def main() -> None:
     # ----- cli ------#
     parser = argparse.ArgumentParser(
@@ -158,35 +184,34 @@ def main() -> None:
 
     retriever = bm25s.BM25.load(output_dir / "bm25_index")
     chunks = load_chunks(output_dir / "chunks.json")
+
     # ----- one question retrieving ------#
     if args.command == "search":
-        # TODO:
-        # - put the retrieving logic in a separet funtion
-        #   (maybe edit search return sources directly)
-        docs, scores = search(args.query, retriever, args.k)
-
-        doc_ids = docs[0]
-        doc_scores = scores[0]
-
-        found_chunks = [chunks[i] for i in doc_ids]
-        retrieval_scores = [round(float(s), 2) for s in doc_scores]
-
-        # ----- convert and print ------#
-        sources = [chunk.to_minimal_source() for chunk in found_chunks]
+        sources, retrieval_scores = searcher(
+            args.query, retriever, args.k, chunks)
 
         print_search_results(sources, retrieval_scores)
-        # -----------#
     # -----------#
 
     # ----- search dataset ------#
     if args.command == "search_dataset":
-        dataset_docs_file = ("/home/mait-tal/Documents/rag/datasets_public/"
-                             "public/UnansweredQuestions/"
-                             "dataset_docs_public.json")
-        dataset_docs_path = Path(dataset_docs_file)
-        with dataset_docs_path.open("r") as dp:
-            data = json.load(dp)
-        questions = [element["question"] for element in data["rag_questions"]]
+        dataset_docs_file: str = ("/home/mait-tal/Documents/rag/"
+                                  "datasets_public/public/UnansweredQuestions/"
+                                  "dataset_docs_public.json")
+        dataset_docs_path: Path = Path(dataset_docs_file)
+
+        questions: dict[str, str] = load_questions(dataset_docs_path)
+
+        k: int = 2
+        for q in questions:
+            sources, retrieval_scores = searcher(
+                q["question"], retriever, k, chunks)
+
+            print("*" * 50)
+            print(q)
+            print("*" * 50)
+            print_search_results(sources, retrieval_scores)
+            print("*" * 50)
 
 
 if __name__ == "__main__":
