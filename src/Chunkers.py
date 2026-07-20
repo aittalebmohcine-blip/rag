@@ -46,6 +46,15 @@ class PythonChunker(Chunker):
             start_char, end_char = self.get_absolute_char_positions(
                 node, line_offsets
             )
+            # tie break for code chunks that are more than 2000 characters
+            sub_chunks = []
+            if end_char - start_char + 1 > 2000:
+                sub_chunks = TextChunker(self.chunk_size, self.overlap).chunk(
+                    text[start_char:end_char])
+            if sub_chunks:
+                for c in sub_chunks:
+                    chunks.append(c)
+            # ------------
             chunk = Chunk(
                 text=text[start_char:end_char], start=start_char, end=end_char
             )
