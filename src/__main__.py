@@ -9,7 +9,8 @@ from tqdm import tqdm
 
 from .Chunkers import PythonChunker, TextChunker
 from .Chunk import Chunk
-from .MinimalSource import MinimalSource, MinimalSearchResults, StudentSearchResults
+from .MinimalSource import (
+    MinimalSource, MinimalSearchResults, StudentSearchResults)
 
 TEXT_EXTENSIONS = {".md", ".txt"}
 CODE_EXTENSIONS = {".py"}
@@ -152,6 +153,17 @@ def load_questions(path: Path) -> list[dict[str, Any]]:
         return data["rag_questions"]
 
 
+def overlap(
+    retrieved: MinimalSource,
+    expected: MinimalSource,
+) -> float:
+    ...
+
+
+def evaluate() -> None:
+    pass
+
+
 def main() -> None:
     # ----- cli ------#
     parser = argparse.ArgumentParser(
@@ -196,7 +208,7 @@ def main() -> None:
     args = parser.parse_args()
     # -----------#
 
-    target_dir = Path("/home/mait-tal/Documents/rag/vllm-0.10.1")
+    target_dir = Path("data/raw/vllm-0.10.1")
     output_dir = Path("data/processed/")
 
     # ----- indexing ------#
@@ -236,7 +248,7 @@ def main() -> None:
                     )
                 )
             student_search_results = StudentSearchResults(
-                search_results=results, k=len(results))
+                search_results=results, k=args.k)
 
             args.save_directory.mkdir(parents=True, exist_ok=True)
             with file_path.open("w", encoding="utf-8") as file:
@@ -246,6 +258,9 @@ def main() -> None:
             print(
                 f"Saved student_search_results to {file_path}"
             )
+
+    # TODO:
+    # - evaluate()
 
 
 if __name__ == "__main__":
