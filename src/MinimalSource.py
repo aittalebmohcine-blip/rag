@@ -7,9 +7,6 @@ class MinimalSource(BaseModel):
     first_character_index: int
     last_character_index: int
 
-    # extra field
-    text: str
-
 
 class MinimalSearchResults(BaseModel):
     question_id: str

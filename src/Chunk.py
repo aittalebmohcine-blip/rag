@@ -14,5 +14,4 @@ class Chunk(BaseModel):
             file_path=self.file_path,
             first_character_index=self.start,
             last_character_index=self.end,
-            text=self.text,
         )
