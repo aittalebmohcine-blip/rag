@@ -5,15 +5,22 @@ from .Chunk import Chunk
 
 
 class TextChunker(Chunker):
-    def chunk(self, text: str) -> list[Chunk]:
 
+    def chunk(self, text: str) -> list[Chunk]:
+        return self.chunk_with_offset(text, 0)
+
+    def chunk_with_offset(
+        self,
+        text: str,
+        offset: int,
+    ) -> list[Chunk]:
         chunks: list[Chunk] = []
         for i in range(0, len(text), self.step):
             end = min(i + self.chunk_size, len(text))
             chunk = Chunk(
                 text=text[i:end],
-                start=i,
-                end=end - 1,
+                start=offset + i,
+                end=offset + end - 1,
             )
             chunks.append(chunk)
             if i + self.chunk_size >= len(text):
@@ -22,12 +29,8 @@ class TextChunker(Chunker):
         return chunks
 
 
-# TODO:
-# - Split oversized functions/classes (> chunk_size)
-# - Merge small module-level statements (imports, constants)
-# - Preserve node metadata (FunctionDef/ClassDef)
-# - Consider docstrings separately
 class PythonChunker(Chunker):
+
     def chunk(self, text: str) -> list[Chunk]:
         try:
             tree = ast.parse(text)
@@ -42,23 +45,27 @@ class PythonChunker(Chunker):
 
         chunks: list[Chunk] = []
 
-        for node in tree.body:
+        fallback_chunker = TextChunker(
+            self.chunk_size,
+            self.overlap,
+        )
+        for node in ast.walk(tree):
+            if not isinstance(node, (ast.FunctionDef, ast.ClassDef)):
+                continue
             start_char, end_char = self.get_absolute_char_positions(
                 node, line_offsets
             )
-            # tie break for code chunks that are more than 2000 characters
-            sub_chunks = []
-            if end_char - start_char + 1 > 2000:
-                sub_chunks = TextChunker(self.chunk_size, self.overlap).chunk(
-                    text[start_char:end_char])
-            if sub_chunks:
-                for c in sub_chunks:
-                    chunks.append(c)
-            # ------------
-            chunk = Chunk(
-                text=text[start_char:end_char], start=start_char, end=end_char
-            )
-            chunks.append(chunk)
+            chunk_text = text[start_char:end_char]
+            if len(chunk_text) <= self.chunk_size:
+                chunk = Chunk(
+                    text=chunk_text, start=start_char, end=end_char - 1
+                )
+                chunks.append(chunk)
+            else:
+                chunks.extend(
+                    fallback_chunker.chunk_with_offset(
+                        chunk_text, offset=start_char)
+                )
         return chunks
 
     @staticmethod
