@@ -12,6 +12,7 @@ from .Chunk import Chunk
 from .MinimalSource import (
     MinimalSource, MinimalSearchResults, StudentSearchResults)
 from .Question import AnsweredQuestion, RagDataset
+from .Generator import Generator
 
 TEXT_EXTENSIONS = {".md", ".txt"}
 CODE_EXTENSIONS = {".py"}
@@ -240,6 +241,42 @@ def load_student_results(student_results_dir: Path) -> StudentSearchResults:
         return StudentSearchResults(**json.load(f))
 
 
+def answer(
+    question: str,
+    retriever: bm25s.BM25,
+    chunks: list[Chunk],
+    generator: Generator,
+    k: int,
+) -> Any:
+
+    # Retrieve the top k chunks.
+    chunk_ids, _ = search(query=question, retriever=retriever, k=k)
+    for i in chunk_ids:
+        print(chunks[i].to_minimal_source())
+    retrieved_chunks_text = [chunks[i].text for i in chunk_ids]
+
+    # Convert them to context.
+    context = "\n\n".join(retrieved_chunks_text)
+
+    # Build the prompt.
+    prompt = f"""If the answer is not present in the context, answer:
+"I don't know."
+
+Context:
+{context}
+
+
+Question:
+{question}
+
+
+Answer:
+"""
+
+    answer = generator.generate(prompt)
+    return answer
+
+
 def main() -> None:
     # ----- cli ------#
     parser = argparse.ArgumentParser(
@@ -276,11 +313,13 @@ def main() -> None:
     search_dataset_parser.add_argument(
         "--save_directory",
         type=Path,
-        default=Path("data/output/search_results"),
+        default=Path("data/output/search_results/UnansweredQuestions"),
         help="Target directory for the dataset_docs_public.json file.",
     )
     # ---
     subparsers.add_parser("evaluate")
+    # ---
+    subparsers.add_parser("answer")
     # ---
 
     args = parser.parse_args()
@@ -345,7 +384,21 @@ def main() -> None:
             print(evaluate(results, answered))
 
             return
-
+        case "answer":
+            import time
+            k = 2
+            generator = Generator("Qwen/Qwen3-0.6B")
+            q = "could the vllm one dat be slef conscious"
+            start_time = time.time()
+            result = answer(
+                    question=q,
+                    retriever=retriever,
+                    chunks=chunks,
+                    generator=generator,
+                    k=k
+                    )
+            print(result)
+            print("taux: ", time.time() - start_time)
 
 if __name__ == "__main__":
     main()
