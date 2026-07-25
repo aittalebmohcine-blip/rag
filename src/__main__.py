@@ -10,8 +10,13 @@ from tqdm import tqdm
 from .Chunkers import PythonChunker, TextChunker
 from .Chunk import Chunk
 from .MinimalSource import (
-    MinimalSource, MinimalSearchResults, StudentSearchResults)
-from .Question import AnsweredQuestion, RagDataset
+    MinimalSource,
+    MinimalSearchResults,
+    StudentSearchResults,
+    StudentSearchResultsAndAnswer,
+    MinimalAnswer,
+    )
+from .Question import AnsweredQuestion, RagDataset, UnansweredQuestion
 from .Generator import Generator
 
 TEXT_EXTENSIONS = {".md", ".txt"}
@@ -242,21 +247,23 @@ def load_student_results(student_results_dir: Path) -> StudentSearchResults:
 
 
 def answer(
-    question: str,
+    unasnswered_question: UnansweredQuestion,
     retriever: bm25s.BM25,
     chunks: list[Chunk],
     generator: Generator,
     k: int,
-) -> Any:
+) -> MinimalAnswer:
 
     # Retrieve the top k chunks.
-    chunk_ids, _ = search(query=question, retriever=retriever, k=k)
-    for i in chunk_ids:
-        print(chunks[i].to_minimal_source())
-    retrieved_chunks_text = [chunks[i].text for i in chunk_ids]
+    chunk_ids, _ = search(
+            query=unasnswered_question.question,
+            retriever=retriever,
+            k=k
+            )
+    retrieved_chunks = [chunks[i] for i in chunk_ids]
 
     # Convert them to context.
-    context = "\n\n".join(retrieved_chunks_text)
+    context = "\n\n".join(chunk.text for chunk in retrieved_chunks)
 
     # Build the prompt.
     prompt = f"""If the answer is not present in the context, answer:
@@ -267,15 +274,51 @@ Context:
 
 
 Question:
-{question}
+{unasnswered_question.question}
 
 
 Answer:
 """
 
-    answer = generator.generate(prompt)
-    return answer
+    result = generator.generate(prompt)
+    retrieved_sources=[chunk.to_minimal_source() for chunk in retrieved_chunks]
+    return MinimalAnswer(
+            answer=result,
+            question_id=unasnswered_question.question_id,
+            question=unasnswered_question.question,
+            retrieved_sources=retrieved_sources,
+            )
 
+def answer_dataset(
+    rag_dataset: RagDataset,
+    retriever: bm25s.BM25,
+    chunks: list[Chunk],
+    generator: Generator,
+    k: int,
+) -> None:
+    answers = []
+
+    for question in tqdm(rag_dataset.rag_questions, desc="Answering"):
+        result = answer(
+                question,
+                retriever,
+                chunks,
+                generator,
+                k
+                )
+        answers.append(result)
+    results_and_answer = StudentSearchResultsAndAnswer(
+            search_results=answers,
+            k=k
+            )
+    save_file = "/home/mait-tal/Documents/rag/data/output/search_results/AnsweredQuestions/dataset_docs_public.json"
+
+    with open(save_file, "w", encoding="utf-8") as f:
+        json.dump(
+            results_and_answer.model_dump(mode="json"),
+            f,
+            indent=4,
+            )
 
 def main() -> None:
     # ----- cli ------#
@@ -320,6 +363,8 @@ def main() -> None:
     subparsers.add_parser("evaluate")
     # ---
     subparsers.add_parser("answer")
+    # ---
+    subparsers.add_parser("answer_dataset")
     # ---
 
     args = parser.parse_args()
@@ -399,6 +444,22 @@ def main() -> None:
                     )
             print(result)
             print("taux: ", time.time() - start_time)
+        case "answer_dataset":
+            k = 2
+            generator = Generator("Qwen/Qwen3-0.6B")
+
+            print("loading questions\n...")
+            with open("datasets_public/public/UnansweredQuestions/dataset_docs_public.json", "r") as f:
+                rag_dataset = RagDataset(**json.load(f))
+            print("rag_dataset loaded")
+
+            answer_dataset(
+                    rag_dataset,
+                    retriever=retriever,
+                    chunks=chunks,
+                    generator=generator,
+                    k=k
+                    )
 
 if __name__ == "__main__":
     main()
