@@ -280,10 +280,10 @@ Question:
 Answer:
 """
 
-    result = generator.generate(prompt)
+    generated_answer = generator.generate(prompt)
     retrieved_sources=[chunk.to_minimal_source() for chunk in retrieved_chunks]
     return MinimalAnswer(
-            answer=result,
+            answer=generated_answer,
             question_id=unasnswered_question.question_id,
             question=unasnswered_question.question,
             retrieved_sources=retrieved_sources,
@@ -295,8 +295,8 @@ def answer_dataset(
     chunks: list[Chunk],
     generator: Generator,
     k: int,
-) -> None:
-    answers = []
+) -> StudentSearchResultsAndAnswer:
+    answers: list[MinimalAnswer] = []
 
     for question in tqdm(rag_dataset.rag_questions, desc="Answering"):
         result = answer(
@@ -311,14 +311,7 @@ def answer_dataset(
             search_results=answers,
             k=k
             )
-    save_file = "/home/mait-tal/Documents/rag/data/output/search_results/AnsweredQuestions/dataset_docs_public.json"
-
-    with open(save_file, "w", encoding="utf-8") as f:
-        json.dump(
-            results_and_answer.model_dump(mode="json"),
-            f,
-            indent=4,
-            )
+    return results_and_answer
 
 def main() -> None:
     # ----- cli ------#
@@ -434,15 +427,19 @@ def main() -> None:
             k = 2
             generator = Generator("Qwen/Qwen3-0.6B")
             q = "could the vllm one dat be slef conscious"
-            start_time = time.time()
-            result = answer(
+            question = UnansweredQuestion(
+                    question_id="",
                     question=q,
+                    )
+            start_time = time.time()
+            minimal_answer = answer(
+                    unasnswered_question=question,
                     retriever=retriever,
                     chunks=chunks,
                     generator=generator,
                     k=k
                     )
-            print(result)
+            print(minimal_answer.answer)
             print("taux: ", time.time() - start_time)
         case "answer_dataset":
             k = 2
@@ -451,14 +448,22 @@ def main() -> None:
             print("loading questions\n...")
             with open("datasets_public/public/UnansweredQuestions/dataset_docs_public.json", "r") as f:
                 rag_dataset = RagDataset(**json.load(f))
-            print("rag_dataset loaded")
+            print("rag_dataset loaded\n")
 
-            answer_dataset(
+            results = answer_dataset(
                     rag_dataset,
                     retriever=retriever,
                     chunks=chunks,
                     generator=generator,
                     k=k
+                    )
+
+            save_file = "/home/mait-tal/Documents/rag/data/output/search_results/AnsweredQuestions/dataset_docs_public.json"
+            with open(save_file, "w", encoding="utf-8") as f:
+                json.dump(
+                    results.model_dump(mode="json"),
+                    f,
+                    indent=4,
                     )
 
 if __name__ == "__main__":
