@@ -428,7 +428,6 @@ def main() -> None:
 
             return
         case "answer":
-            import time
             k = 2
             generator = Generator("Qwen/Qwen3-0.6B")
             q = "could the vllm one dat be slef conscious"
@@ -445,7 +444,6 @@ def main() -> None:
                     k=k
                     )
             print(minimal_answer.answer)
-            print("taux: ", time.time() - start_time)
         case "answer_dataset":
             k = 2
             generator = Generator("Qwen/Qwen3-0.6B")
