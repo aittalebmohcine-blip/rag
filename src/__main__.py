@@ -1,3 +1,8 @@
+from fire import Fire
+
+from .CLI import CLI
+# ---
+
 from typing import Any
 import json
 from pathlib import Path
@@ -466,5 +471,8 @@ def main() -> None:
                     indent=4,
                     )
 
+def main_1() -> None:
+    Fire(CLI)
+
 if __name__ == "__main__":
-    main()
+    main_1()
