@@ -14,6 +14,14 @@ from .searcher import (
         load_chunks,
         load_questions,
         )
+from .evaluator import (
+        recall,
+        load_dataset,
+        load_student_results,
+        overlap,
+        source_found,
+        question_recall
+        )
 
 from .Question import RagDataset
 from .MinimalSource import (
@@ -164,9 +172,18 @@ class CLI:
         )
 
 
-    #def evaluate(
-    #    self,
-    #    student_results: str,
-    #    ground_truth: str,
-    #):
-    #    ...
+    def evaluate(
+        self,
+        student_search_results_path : str,
+        dataset_path: str,
+    ) -> None:
+        student_search_results_path = Path(student_search_results_path)
+        dataset_path = Path(dataset_path)
+
+        student_search_results: StudentSearchResults = load_student_results(
+                student_search_results_path
+                )
+        dataset: RagDataset = load_dataset(dataset_path)
+
+        recall_at_k = recall(student_search_results, dataset)
+        print(f"recall@{student_search_results.k}: {recall_at_k}")
