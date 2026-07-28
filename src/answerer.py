@@ -7,7 +7,7 @@ from .models import MinimalSource, StudentSearchResults
 def build_prompt(query: str, sources: list[MinimalSource]):
     prompt: str
 
-    context = "\n\n".join(source_to_text(s) for s in sources)
+    context = "\n\n".join(source_to_text(s) for s in sources[:3])
 
     prompt = f"""If the answer is not present in the context, answer:
 "I don't know."
