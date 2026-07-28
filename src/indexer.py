@@ -2,7 +2,7 @@ import bm25s
 
 from pathlib import Path
 
-from .Chunk import Chunk
+from .models import Chunk
 
 def save_index(retriever: bm25s.BM25, output_dir: Path) -> None:
     retriever.save(str(output_dir / "bm25_index"))

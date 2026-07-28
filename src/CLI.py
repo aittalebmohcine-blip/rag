@@ -4,8 +4,15 @@ from tqdm import tqdm
 from pathlib import Path
 import json
 
+from .models import(
+        RagDataset,
+        MinimalSearchResults,
+        StudentSearchResults,
+        MinimalAnswer,
+        StudentSearchResultsAndAnswer
+        )
 from .answerer import build_prompt, source_to_text, load_student_search_results
-from .chunker import collect_files, chunk_repository, save_chunks
+from .chunker_helpers import collect_files, chunk_repository, save_chunks
 from .indexer import build_bm25, save_index
 from .searcher import (
         print_search_results,
@@ -18,17 +25,6 @@ from .evaluator import (
         recall,
         load_dataset,
         load_student_results,
-        overlap,
-        source_found,
-        question_recall
-        )
-
-from .Question import RagDataset
-from .MinimalSource import (
-        MinimalSearchResults,
-        StudentSearchResults,
-        MinimalAnswer,
-        StudentSearchResultsAndAnswer
         )
 from .Generator import Generator
 

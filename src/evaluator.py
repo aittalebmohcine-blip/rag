@@ -1,8 +1,12 @@
 import json
 from pathlib import Path
 
-from .Question import RagDataset, AnsweredQuestion
-from .MinimalSource import StudentSearchResults, MinimalSource
+from .models import (
+        RagDataset,
+        AnsweredQuestion,
+        StudentSearchResults,
+        MinimalSource
+        )
 
 
 def recall(

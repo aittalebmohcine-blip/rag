@@ -3,9 +3,11 @@ import bm25s
 from pathlib import Path
 import json
 
-from .MinimalSource import MinimalSource
-from .Chunk import Chunk
-from .Question import RagDataset
+from .models import (
+        MinimalSource,
+        Chunk,
+        RagDataset
+        )
 
 def print_search_results(sources: list[MinimalSource]) -> None:
     for source in sources:

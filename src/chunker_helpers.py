@@ -3,7 +3,7 @@ from tqdm import tqdm
 
 import json
 
-from .Chunk import Chunk
+from .models import Chunk
 from .Chunkers import TextChunker, PythonChunker
 
 TEXT_EXTENSIONS = {".md", ".txt"}

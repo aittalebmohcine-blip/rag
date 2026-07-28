@@ -1,7 +1,7 @@
 import ast
 
 from .Chunker import Chunker
-from .Chunk import Chunk
+from .models import Chunk
 
 
 class TextChunker(Chunker):

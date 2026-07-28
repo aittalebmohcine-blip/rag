@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from .Chunk import Chunk
+from .models import Chunk
 
 
 class Chunker(ABC):

@@ -1,7 +1,7 @@
 from pathlib import Path
 import json
 
-from .MinimalSource import MinimalSource, StudentSearchResults
+from .models import MinimalSource, StudentSearchResults
 
 
 def build_prompt(query: str, sources: list[MinimalSource]):
