@@ -1,10 +1,16 @@
 from fire import Fire
 
-from .CLI import CLI
+import sys
+
+from src.CLI import CLI
 
 
 def main() -> None:
-    Fire(CLI)
+    try:
+        Fire(CLI)
+    except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        raise SystemExit(1)
 
 if __name__ == "__main__":
     main()

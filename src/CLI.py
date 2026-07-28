@@ -31,14 +31,20 @@ from .Generator import Generator
 TEXT_EXTENSIONS = {".md", ".txt"}
 CODE_EXTENSIONS = {".py"}
 
+OVERLAP_RATIO = 0.15
+
 class CLI:
     def index(
         self,
         max_chunk_size: int=2000
     ) -> None:
+        if not 0 < max_chunk_size <= 2000:
+            raise ValueError("max_chunk_size must be positive and cannot exceed 2000.")
+
+        overlap = int(max_chunk_size * OVERLAP_RATIO)
+
         repository = Path("data/raw")
         output_dir = Path("data/processed")
-        overlap = 20
 
         files: list[Path] = collect_files(repository, TEXT_EXTENSIONS | CODE_EXTENSIONS)
 
@@ -49,6 +55,7 @@ class CLI:
         retriever: bm25s.BM25 = build_bm25(chunks)
 
         save_index(retriever, output_dir)
+        print("Ingestion complete! Indices saved under data/processed/")
 
 
     def search(
