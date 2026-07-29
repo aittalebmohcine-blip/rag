@@ -38,10 +38,10 @@ def chunk_repository(
             all_chunks.extend(chunker.chunk_file(file))
 
         except (OSError, UnicodeDecodeError) as e:
-            print(f"Skipping {file}: {e}")
+            print(f"\nSkipping {file}: {e}")
 
     if not all_chunks:
-        raise ValueError("No supported files found.")
+        raise ValueError("No data to be processed!")
 
     return all_chunks
 

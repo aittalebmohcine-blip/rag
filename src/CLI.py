@@ -38,24 +38,38 @@ class CLI:
         self,
         max_chunk_size: int=2000
     ) -> None:
-        if not 0 < max_chunk_size <= 2000:
-            raise ValueError("max_chunk_size must be positive and cannot exceed 2000.")
+        if not isinstance(max_chunk_size, int) or not 0 < max_chunk_size <= 2000:
+            raise ValueError("max_chunk_size must be a positive integer and cannot exceed 2000.")
 
         overlap = int(max_chunk_size * OVERLAP_RATIO)
 
         repository = Path("data/raw")
         output_dir = Path("data/processed")
 
+        print("---- Processing files under data/raw ----\n")
+
+        print("Collecting files...")
         files: list[Path] = collect_files(repository, TEXT_EXTENSIONS | CODE_EXTENSIONS)
+        if not files:
+            raise ValueError(
+                    "No supported files found. Make sure the repository is under data/raw"
+                    )
+        print("Files collected.\n")
 
         chunks: list[Chunk] = chunk_repository(files, max_chunk_size, overlap)
 
+        print(f"Saving chunks under {output_dir}...")
         save_chunks(chunks, output_dir)
+        print("Chunks saved.\n")
 
+        print("Building the index...")
         retriever: bm25s.BM25 = build_bm25(chunks)
+        print("Index has ben built.\n")
 
+        print(f"Saving the index under {output_dir}...\n")
         save_index(retriever, output_dir)
-        print("Ingestion complete! Indices saved under data/processed/")
+
+        print(f"Ingestion complete! Indices saved under {output_dir}")
 
 
     def search(
