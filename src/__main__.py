@@ -14,8 +14,16 @@ def main() -> None:
         raise SystemExit(1)
 
     except PermissionError as e:
-        print(e, file=sys.stderr)
+        print(f"Error: {e}", file=sys.stderr)
         raise SystemExit(1)
+
+    except FileNotFoundError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        raise SystemExit(1)
+
+    #except Exception as e:
+    #    print(f"Unexpected Error: {e}", file=sys.stderr)
+    #    raise SystemExit(1)
 
 if __name__ == "__main__":
     main()

@@ -39,20 +39,20 @@ class CLI:
         max_chunk_size: int=2000
     ) -> None:
         if not isinstance(max_chunk_size, int) or not 0 < max_chunk_size <= 2000:
-            raise ValueError("max_chunk_size must be a positive integer and cannot exceed 2000.")
+            raise ValueError("max_chunk_size must be a positive (non-zero) integer and cannot exceed 2000.")
 
         overlap = int(max_chunk_size * OVERLAP_RATIO)
 
         repository = Path("data/raw")
         output_dir = Path("data/processed")
 
-        print("---- Processing files under data/raw ----\n")
+        print("---- Ingesting data/raw to build an index ----\n")
 
         print("Collecting files...")
         files: list[Path] = collect_files(repository, TEXT_EXTENSIONS | CODE_EXTENSIONS)
         if not files:
             raise ValueError(
-                    "No supported files found. Make sure the repository is under data/raw"
+                    "No supported files found. Make sure the target repository is under data/raw"
                     )
         print("Files collected.\n")
 
@@ -60,7 +60,7 @@ class CLI:
 
         print(f"Saving chunks under {output_dir}...")
         save_chunks(chunks, output_dir)
-        print("Chunks saved.\n")
+        print(f"Chunks saved with max_chunk_size={max_chunk_size}.\n")
 
         print("Building the index...")
         retriever: bm25s.BM25 = build_bm25(chunks)
@@ -69,7 +69,7 @@ class CLI:
         print(f"Saving the index under {output_dir}...\n")
         save_index(retriever, output_dir)
 
-        print(f"Ingestion complete! Indices saved under {output_dir}")
+        print(f"Ingestion complete! Indices saved under {output_dir}\n")
 
 
     def search(
@@ -77,14 +77,32 @@ class CLI:
         query: str,
         k: int = 5,
     ) -> None:
+        query = str(query)
+        if not isinstance(k, int) or k <= 0:
+            raise ValueError("'k' must be a positive (non-zero) integer.\n")
+
         output_dir = Path("data/processed")
 
-        retriever = bm25s.BM25.load(output_dir / "bm25_index")
-        chunks = load_chunks(output_dir / "chunks.json")
+        print(f"Loading the index from {output_dir}...")
+        try:
+            retriever = bm25s.BM25.load(output_dir / "bm25_index")
+            chunks = load_chunks(output_dir / "chunks.json")
+        except Exception:
+            raise FileNotFoundError(
+                    "Index is invalid or corrupted. Please run:\nuv run python -m src index"
+                    )
+        print("Index loaded.\n")
 
-        sources: list[MinimalSource] = single_question_searcher(
-            query, retriever, k, chunks)
+        print("Looking for relevant sources...\n")
+        try:
+            sources: list[MinimalSource] = single_question_searcher(
+                query, retriever, k, chunks)
+        except Exception:
+            raise FileNotFoundError(
+                    "An error accured due to invalid or corrupted index. Please run:\nuv run python -m src index"
+                    )
 
+        print("results:")
         print_search_results(sources)
 
     def search_dataset(
