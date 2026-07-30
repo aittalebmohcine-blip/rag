@@ -33,17 +33,6 @@ def recall(
 
     return total / len(ground_truth_by_id)
 
-def load_dataset(dataset_path: Path) -> RagDataset:
-    with dataset_path.open("r", encoding="utf-8") as f:
-        return RagDataset(**json.load(f))
-
-
-def load_student_results(
-    student_search_results_path: Path
-) -> StudentSearchResults:
-    with student_search_results_path.open("r", encoding="utf-8") as f:
-        return StudentSearchResults(**json.load(f))
-
 
 def overlap(
     retrieved: MinimalSource,

@@ -9,7 +9,8 @@ from .models import(
         MinimalSearchResults,
         StudentSearchResults,
         MinimalAnswer,
-        StudentSearchResultsAndAnswer
+        StudentSearchResultsAndAnswer,
+        AnsweredQuestion
         )
 from .answerer import build_prompt, source_to_text, load_student_search_results
 from .chunker_helpers import collect_files, chunk_repository, save_chunks
@@ -18,14 +19,9 @@ from .searcher import (
         print_search_results,
         retrieve_ids,
         single_question_searcher,
-        load_chunks,
         load_questions,
         )
-from .evaluator import (
-        recall,
-        load_dataset,
-        load_student_results,
-        )
+from .evaluator import recall
 from .Generator import Generator
 from .helpers import load_index_and_chunks
 
@@ -225,13 +221,22 @@ class CLI:
         student_search_results_path : str,
         dataset_path: str,
     ) -> None:
-        student_search_results_path = Path(student_search_results_path)
-        dataset_path = Path(dataset_path)
+        student_search_results_path = Path(str(student_search_results_path))
+        dataset_path = Path(str(dataset_path))
 
-        student_search_results: StudentSearchResults = load_student_results(
+        print("Loading student search results...")
+        student_search_results: StudentSearchResults = load_student_search_results(
                 student_search_results_path
                 )
-        dataset: RagDataset = load_dataset(dataset_path)
+        print("Search results loaded.\n")
+
+        print("Loading the dataset...")
+        dataset: RagDataset = load_questions(dataset_path)
+        if not all(isinstance(q, AnsweredQuestion) for q in dataset.rag_questions):
+            raise ValueError(
+                    f"the RagDataset.rag_questions in '{dataset_path}' does not conform to the list[AnsweredQuestion] schema."
+                    )
+        print("Dataset loaded.\n")
 
         recall_at_k = recall(student_search_results, dataset)
         print(f"recall@{student_search_results.k}: {recall_at_k}")

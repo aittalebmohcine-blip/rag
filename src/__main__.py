@@ -27,9 +27,9 @@ def main() -> None:
         print(e, file=sys.stderr)
         raise SystemExit(1)
 
-    #except Exception as e:
-    #    print(f"Unexpected Error: {e}", file=sys.stderr)
-    #    raise SystemExit(1)
+    except Exception as e:
+        print(f"Unexpected Error: {e}", file=sys.stderr)
+        raise SystemExit(1)
 
 if __name__ == "__main__":
     main()
