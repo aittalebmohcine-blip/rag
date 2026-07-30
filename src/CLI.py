@@ -106,8 +106,6 @@ class CLI:
         if not isinstance(k, int) or k <= 0:
             raise ValueError("'k' must be a positive (non-zero) integer.")
         save_directory = Path(str(save_directory))
-        if not save_directory.is_dir():
-            raise ValueError(f"{save_directory} Is a file!")
 
         index_dir = Path("data/processed")
 
@@ -183,15 +181,17 @@ class CLI:
         student_search_results_path: str,
         save_directory: str = "data/output/search_results/AnsweredQuestions"
     ):
-        student_search_results_path = Path(student_search_results_path)
-        save_directory = Path(save_directory)
+        student_search_results_path = Path(str(student_search_results_path))
+        save_directory = Path(str(save_directory))
 
-        generator = Generator("Qwen/Qwen3-0.6B")
-
+        print("Loading student search results...")
         student_search_results: StudentSearchResults = load_student_search_results(
                 student_search_results_path
                 )
+        print("Search results loaded.\n")
 
+        print("Running the LLM...")
+        generator = Generator("Qwen/Qwen3-0.6B")
         answers: list[MinimalAnswer] = []
         for result in tqdm(student_search_results.search_results, desc="Answering"):
             prompt = build_prompt(
@@ -210,6 +210,7 @@ class CLI:
                 )
 
         save_directory.mkdir(parents=True, exist_ok=True)
+        print(f"\n{save_directory} created.\n")
         save_path = save_directory / student_search_results_path.name
         with save_path.open("w", encoding="utf-8") as file:
             json.dump(results_and_answer.model_dump(

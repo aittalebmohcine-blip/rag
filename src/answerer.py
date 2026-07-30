@@ -1,3 +1,5 @@
+from pydantic import ValidationError
+
 from pathlib import Path
 import json
 
@@ -36,7 +38,12 @@ def source_to_text(source: MinimalSource) -> str:
     ]
 
 
-def load_student_search_results(student_search_results_path: Path):
-    with student_search_results_path.open("r", encoding="utf-8") as f:
+def load_student_search_results(path: Path):
+    with path.open("r", encoding="utf-8") as f:
         content = json.load(f)
-    return StudentSearchResults(**content)
+    try:
+        return StudentSearchResults.model_validate(content)
+    except ValidationError as e:
+        raise ValueError(
+            f"'{path}' does not conform to the StudentSearchResults schema.\n{e}"
+        ) from e
