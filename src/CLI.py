@@ -154,18 +154,27 @@ class CLI:
         query: str,
         k: int = 5,
     ) -> None:
-        output_dir = Path("data/processed")
+        query = str(query)
+        if not isinstance(k, int) or k <= 0:
+            raise ValueError("'k' must be a positive (non-zero) integer.")
 
-        retriever = bm25s.BM25.load(output_dir / "bm25_index")
-        chunks = load_chunks(output_dir / "chunks.json")
+        index_dir = Path("data/processed")
 
-        generator = Generator("Qwen/Qwen3-0.6B")
+        print(f"Loading the index from {index_dir}...")
+        retriever, chunks = load_index_and_chunks(index_dir)
+        print("Index loaded.\n")
 
+        print("Looking for relevant sources...\n")
         sources: list[MinimalSource] = single_question_searcher(
             query, retriever, k, chunks)
 
+        print("Running the LLM...")
+        generator = Generator("Qwen/Qwen3-0.6B")
+
         prompt = build_prompt(query, sources)
         generated_answer = generator.generate(prompt)
+
+        print("\nLLM's Answer:")
         print(generated_answer)
 
 

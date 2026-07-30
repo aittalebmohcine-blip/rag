@@ -19,16 +19,12 @@ def main() -> None:
         print(f"Error: {e}", file=sys.stderr)
         raise SystemExit(1)
 
-    except IsADirectoryError as e:
-        print(f"Error: {e}", file=sys.stderr)
-        raise SystemExit(1)
-
-    except PermissionError as e:
-        print(f"Error: {e}", file=sys.stderr)
-        raise SystemExit(1)
-
-    except FileNotFoundError as e:
-        print(f"Error: {e}", file=sys.stderr)
+    except (
+            FileNotFoundError,
+            IsADirectoryError,
+            PermissionError
+    ) as e:
+        print(e, file=sys.stderr)
         raise SystemExit(1)
 
     #except Exception as e:
