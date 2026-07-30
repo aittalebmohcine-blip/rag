@@ -1,6 +1,7 @@
 from fire import Fire
 
 import sys
+import json
 
 from src.CLI import CLI
 
@@ -9,7 +10,16 @@ def main() -> None:
     try:
         Fire(CLI)
 
+
+    except json.decoder.JSONDecodeError as e:
+        print(f"Invalid JSON: {e}", file=sys.stderr)
+        raise SystemExit(1)
+
     except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        raise SystemExit(1)
+
+    except IsADirectoryError as e:
         print(f"Error: {e}", file=sys.stderr)
         raise SystemExit(1)
 

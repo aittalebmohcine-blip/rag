@@ -1,4 +1,5 @@
 import bm25s
+from pydantic import ValidationError
 
 from pathlib import Path
 import json
@@ -31,13 +32,19 @@ def single_question_searcher(
     k: int,
     chunks: list[Chunk]
 ) -> list[MinimalSource]:
-    doc_ids = retrieve_ids(query, retriever, k)
+    try:
+        doc_ids = retrieve_ids(query, retriever, k)
 
-    found_chunks = [chunks[i] for i in doc_ids]
+        found_chunks = [chunks[i] for i in doc_ids]
 
-    sources = [chunk.to_minimal_source() for chunk in found_chunks]
+        sources = [chunk.to_minimal_source() for chunk in found_chunks]
 
-    return sources
+        return sources
+
+    except Exception:
+        raise FileNotFoundError(
+                "An error accured due to invalid or corrupted index. Please run:\nuv run python -m src index"
+                )
 
 def load_chunks(chunks_path: Path) -> list[Chunk]:
     with chunks_path.open() as f:
@@ -46,4 +53,9 @@ def load_chunks(chunks_path: Path) -> list[Chunk]:
 def load_questions(path: Path) -> RagDataset:
     with path.open("r", encoding="utf-8") as f:
         data = json.load(f)
-        return RagDataset(**data)
+    try:
+        return RagDataset.model_validate(data)
+    except ValidationError as e:
+        raise ValueError(
+            f"'{path}' does not conform to the RagDataset schema.\n{e}"
+        ) from e

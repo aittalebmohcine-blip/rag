@@ -27,6 +27,7 @@ from .evaluator import (
         load_student_results,
         )
 from .Generator import Generator
+from .helpers import load_index_and_chunks
 
 TEXT_EXTENSIONS = {".md", ".txt"}
 CODE_EXTENSIONS = {".py"}
@@ -84,23 +85,12 @@ class CLI:
         output_dir = Path("data/processed")
 
         print(f"Loading the index from {output_dir}...")
-        try:
-            retriever = bm25s.BM25.load(output_dir / "bm25_index")
-            chunks = load_chunks(output_dir / "chunks.json")
-        except Exception:
-            raise FileNotFoundError(
-                    "Index is invalid or corrupted. Please run:\nuv run python -m src index"
-                    )
+        retriever, chunks = load_index_and_chunks(output_dir)
         print("Index loaded.\n")
 
         print("Looking for relevant sources...\n")
-        try:
-            sources: list[MinimalSource] = single_question_searcher(
-                query, retriever, k, chunks)
-        except Exception:
-            raise FileNotFoundError(
-                    "An error accured due to invalid or corrupted index. Please run:\nuv run python -m src index"
-                    )
+        sources: list[MinimalSource] = single_question_searcher(
+            query, retriever, k, chunks)
 
         print("results:")
         print_search_results(sources)
@@ -111,14 +101,25 @@ class CLI:
         k: int = 5,
         save_directory: str = "data/output/search_results/UnansweredQuestions",
     ) -> None:
-        output_dir = Path("data/processed")
-        save_directory = Path(save_directory)
-        dataset_path = Path(dataset_path)
 
-        retriever = bm25s.BM25.load(output_dir / "bm25_index")
-        chunks = load_chunks(output_dir / "chunks.json")
+        dataset_path = Path(str(dataset_path))
+        if not isinstance(k, int) or k <= 0:
+            raise ValueError("'k' must be a positive (non-zero) integer.")
+        save_directory = Path(str(save_directory))
+        if not save_directory.is_dir():
+            raise ValueError(f"{save_directory} Is a file!")
+
+        index_dir = Path("data/processed")
+
+        print("Loading the dataset...")
         rag_dataset: RagDataset = load_questions(dataset_path)
+        print("Dataset loaded.\n")
 
+        print(f"Loading the index from {index_dir}...")
+        retriever, chunks = load_index_and_chunks(index_dir)
+        print("Index loaded.\n")
+
+        print("Generating search results...")
         results: list[MinimalSearchResults] = []
         for unanswered_question in rag_dataset.rag_questions:
             sources = single_question_searcher(
@@ -136,8 +137,10 @@ class CLI:
             )
         student_search_results = StudentSearchResults(
             search_results=results, k=k)
+        print("Search results generated.\n")
 
         save_directory.mkdir(parents=True, exist_ok=True)
+        print(f"{save_directory} created.\n")
         save_path = save_directory / dataset_path.name
         with save_path.open("w", encoding="utf-8") as file:
             json.dump(student_search_results.model_dump(
