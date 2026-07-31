@@ -23,7 +23,7 @@ from .searcher import (
         )
 from .evaluator import recall
 from .Generator import Generator
-from .helpers import load_index_and_chunks
+from .helpers import load_index_and_chunks, validate_strict_pos_int, validate_str_arg
 
 TEXT_EXTENSIONS = {".md", ".txt"}
 CODE_EXTENSIONS = {".py"}
@@ -35,8 +35,9 @@ class CLI:
         self,
         max_chunk_size: int=2000
     ) -> None:
-        if not isinstance(max_chunk_size, int) or not 0 < max_chunk_size <= 2000:
-            raise ValueError("max_chunk_size must be a positive (non-zero) integer and cannot exceed 2000.")
+        validate_strict_pos_int("max_chunk_size", max_chunk_size)
+        if max_chunk_size > 2000:
+            raise ValueError("max_chunk_size cannot exceed 2000.")
 
         overlap = int(max_chunk_size * OVERLAP_RATIO)
 
@@ -74,9 +75,9 @@ class CLI:
         query: str,
         k: int = 5,
     ) -> None:
+        validate_strict_pos_int("k", k)
+        validate_str_arg("query", query)
         query = str(query)
-        if not isinstance(k, int) or k <= 0:
-            raise ValueError("'k' must be a positive (non-zero) integer.\n")
 
         output_dir = Path("data/processed")
 
@@ -97,10 +98,11 @@ class CLI:
         k: int = 5,
         save_directory: str = "data/output/search_results/UnansweredQuestions",
     ) -> None:
+        validate_str_arg("dataset_path", dataset_path)
+        validate_strict_pos_int("k", k)
+        validate_str_arg("save_directory", save_directory)
 
         dataset_path = Path(str(dataset_path))
-        if not isinstance(k, int) or k <= 0:
-            raise ValueError("'k' must be a positive (non-zero) integer.")
         save_directory = Path(str(save_directory))
 
         index_dir = Path("data/processed")
@@ -148,10 +150,10 @@ class CLI:
         query: str,
         k: int = 5,
     ) -> None:
-        query = str(query)
-        if not isinstance(k, int) or k <= 0:
-            raise ValueError("'k' must be a positive (non-zero) integer.")
+        validate_str_arg("query", query)
+        validate_strict_pos_int("k", k)
 
+        query = str(query)
         index_dir = Path("data/processed")
 
         print(f"Loading the index from {index_dir}...")
@@ -177,6 +179,12 @@ class CLI:
         student_search_results_path: str,
         save_directory: str = "data/output/search_results/AnsweredQuestions"
     ):
+        validate_str_arg(
+                "student_search_results_path",
+                student_search_results_path
+                )
+        validate_str_arg("save_directory", save_directory)
+
         student_search_results_path = Path(str(student_search_results_path))
         save_directory = Path(str(save_directory))
 
@@ -221,6 +229,12 @@ class CLI:
         student_search_results_path : str,
         dataset_path: str,
     ) -> None:
+        validate_str_arg(
+                "student_search_results_path",
+                student_search_results_path
+                )
+        validate_str_arg("dataset_path", dataset_path)
+
         student_search_results_path = Path(str(student_search_results_path))
         dataset_path = Path(str(dataset_path))
 
