@@ -31,3 +31,6 @@ def validate_str_arg(param_name: str, param_val: any):
                 "Note: a True/False value is NOT treated as a string. "
                 "if you dont want that, then for example use '\"True\"'"
                 )
+
+    if isinstance(param_val, str) and not param_val.strip():
+        raise ValueError(f"{param_name} cannot be empty.")
