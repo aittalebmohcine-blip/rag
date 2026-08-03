@@ -33,7 +33,7 @@ def source_to_text(source: MinimalSource) -> str:
         text = f.read()
 
     return text[
-        source.first_character_index :
+        source.first_character_index:
         source.last_character_index + 1
     ]
 
@@ -45,5 +45,6 @@ def load_student_search_results(path: Path):
         return StudentSearchResults.model_validate(content)
     except ValidationError as e:
         raise ValueError(
-            f"'{path}' does not conform to the StudentSearchResults schema.\n{e}"
+            f"'{path}' does not conform to the"
+            f" StudentSearchResults schema.\n{e}"
         ) from e

@@ -4,36 +4,41 @@ from tqdm import tqdm
 from pathlib import Path
 import json
 
-from .models import(
-        RagDataset,
-        MinimalSearchResults,
-        StudentSearchResults,
-        MinimalAnswer,
-        StudentSearchResultsAndAnswer,
-        AnsweredQuestion
-        )
-from .answerer import build_prompt, source_to_text, load_student_search_results
+from .models import (
+    RagDataset,
+    MinimalSearchResults,
+    StudentSearchResults,
+    MinimalAnswer,
+    StudentSearchResultsAndAnswer,
+    AnsweredQuestion,
+    Chunk,
+    MinimalSource,
+)
+from .answerer import build_prompt, load_student_search_results
 from .chunker_helpers import collect_files, chunk_repository, save_chunks
 from .indexer import build_bm25, save_index
 from .searcher import (
-        print_search_results,
-        retrieve_ids,
-        single_question_searcher,
-        load_questions,
-        )
+    print_search_results,
+    single_question_searcher,
+    load_questions,
+)
 from .evaluator import recall
 from .Generator import Generator
-from .helpers import load_index_and_chunks, validate_strict_pos_int, validate_str_arg
+from .helpers import (
+    load_index_and_chunks,
+    validate_strict_pos_int, validate_str_arg
+)
 
 TEXT_EXTENSIONS = {".md", ".txt"}
 CODE_EXTENSIONS = {".py"}
 
 OVERLAP_RATIO = 0.15
 
+
 class CLI:
     def index(
         self,
-        max_chunk_size: int=2000
+        max_chunk_size: int = 2000
     ) -> None:
         validate_strict_pos_int("max_chunk_size", max_chunk_size)
         if max_chunk_size > 2000:
@@ -47,11 +52,13 @@ class CLI:
         print("---- Ingesting data/raw to build an index ----\n")
 
         print("Collecting files...")
-        files: list[Path] = collect_files(repository, TEXT_EXTENSIONS | CODE_EXTENSIONS)
+        files: list[Path] = collect_files(
+            repository, TEXT_EXTENSIONS | CODE_EXTENSIONS)
         if not files:
             raise ValueError(
-                    "No supported files found. Make sure the target repository is under data/raw"
-                    )
+                "No supported files found. "
+                "Make sure the target repository is under data/raw"
+            )
         print("Files collected.\n")
 
         chunks: list[Chunk] = chunk_repository(files, max_chunk_size, overlap)
@@ -68,7 +75,6 @@ class CLI:
         save_index(retriever, output_dir)
 
         print(f"Ingestion complete! Indices saved under {output_dir}\n")
-
 
     def search(
         self,
@@ -119,11 +125,11 @@ class CLI:
         results: list[MinimalSearchResults] = []
         for unanswered_question in rag_dataset.rag_questions:
             sources = single_question_searcher(
-                    unanswered_question.question,
-                    retriever,
-                    k,
-                    chunks
-                    )
+                unanswered_question.question,
+                retriever,
+                k,
+                chunks
+            )
             results.append(
                 MinimalSearchResults(
                     question_id=unanswered_question.question_id,
@@ -173,45 +179,46 @@ class CLI:
         print("\nLLM's Answer:")
         print(generated_answer)
 
-
     def answer_dataset(
         self,
         student_search_results_path: str,
         save_directory: str = "data/output/search_results/AnsweredQuestions"
     ):
         validate_str_arg(
-                "student_search_results_path",
-                student_search_results_path
-                )
+            "student_search_results_path",
+            student_search_results_path
+        )
         validate_str_arg("save_directory", save_directory)
 
         student_search_results_path = Path(str(student_search_results_path))
         save_directory = Path(str(save_directory))
 
         print("Loading student search results...")
-        student_search_results: StudentSearchResults = load_student_search_results(
-                student_search_results_path
-                )
+        student_search_results: StudentSearchResults = \
+            load_student_search_results(student_search_results_path)
         print("Search results loaded.\n")
 
         print("Running the LLM...")
         generator = Generator("Qwen/Qwen3-0.6B")
         answers: list[MinimalAnswer] = []
-        for result in tqdm(student_search_results.search_results, desc="Answering"):
+        for result in tqdm(
+                student_search_results.search_results,
+                desc="Answering"
+        ):
             prompt = build_prompt(
-                    result.question,
-                    result.retrieved_sources
-                    )
+                result.question,
+                result.retrieved_sources
+            )
             generated_answer = generator.generate(prompt)
             answers.append(MinimalAnswer(
                 **result.model_dump(),
                 answer=generated_answer
-                ))
+            ))
 
         results_and_answer = StudentSearchResultsAndAnswer(
-                search_results=answers,
-                k=student_search_results.k
-                )
+            search_results=answers,
+            k=student_search_results.k
+        )
 
         save_directory.mkdir(parents=True, exist_ok=True)
         print(f"\n{save_directory} created.\n")
@@ -223,33 +230,33 @@ class CLI:
             f"Saved student_search_results to {save_path}"
         )
 
-
     def evaluate(
         self,
-        student_search_results_path : str,
+        student_search_results_path: str,
         dataset_path: str,
     ) -> None:
         validate_str_arg(
-                "student_search_results_path",
-                student_search_results_path
-                )
+            "student_search_results_path",
+            student_search_results_path
+        )
         validate_str_arg("dataset_path", dataset_path)
 
         student_search_results_path = Path(str(student_search_results_path))
         dataset_path = Path(str(dataset_path))
 
         print("Loading student search results...")
-        student_search_results: StudentSearchResults = load_student_search_results(
-                student_search_results_path
-                )
+        student_search_results: StudentSearchResults = \
+            load_student_search_results(student_search_results_path)
         print("Search results loaded.\n")
 
         print("Loading the dataset...")
         dataset: RagDataset = load_questions(dataset_path)
-        if not all(isinstance(q, AnsweredQuestion) for q in dataset.rag_questions):
+        if not all(isinstance(q, AnsweredQuestion)
+                   for q in dataset.rag_questions):
             raise ValueError(
-                    f"the RagDataset.rag_questions in '{dataset_path}' does not conform to the list[AnsweredQuestion] schema."
-                    )
+                f"the RagDataset.rag_questions in '{dataset_path}' "
+                "does not conform to the list[AnsweredQuestion] schema."
+            )
         print("Dataset loaded.\n")
 
         recall_at_k = recall(student_search_results, dataset)

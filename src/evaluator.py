@@ -1,12 +1,9 @@
-import json
-from pathlib import Path
-
 from .models import (
-        RagDataset,
-        AnsweredQuestion,
-        StudentSearchResults,
-        MinimalSource
-        )
+    RagDataset,
+    AnsweredQuestion,
+    StudentSearchResults,
+    MinimalSource
+)
 
 
 def recall(
@@ -55,6 +52,7 @@ def overlap(
         return 0.0
 
     return intersection / expected_length
+
 
 def source_found(
     retrieved: list[MinimalSource],

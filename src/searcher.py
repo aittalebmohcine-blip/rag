@@ -5,16 +5,19 @@ from pathlib import Path
 import json
 
 from .models import (
-        MinimalSource,
-        Chunk,
-        RagDataset
-        )
+    MinimalSource,
+    Chunk,
+    RagDataset
+)
+
 
 def print_search_results(sources: list[MinimalSource]) -> None:
     for source in sources:
         print(
-                f"{source.file_path} [{source.first_character_index}:{source.last_character_index}]"
-                )
+            f"{source.file_path} "
+            f"[{source.first_character_index}:{source.last_character_index}]"
+        )
+
 
 def retrieve_ids(
     query: str,
@@ -25,6 +28,7 @@ def retrieve_ids(
     docs, scores = retriever.retrieve(query_tokens, k=k)
     doc_ids = docs[0]
     return doc_ids
+
 
 def single_question_searcher(
     query: str,
@@ -43,12 +47,15 @@ def single_question_searcher(
 
     except Exception:
         raise FileNotFoundError(
-                "An error accured due to invalid or corrupted index. Please run:\nuv run python -m src index"
-                )
+            "An error accured due to invalid or corrupted index. "
+            "Please run:\nuv run python -m src index"
+        )
+
 
 def load_chunks(chunks_path: Path) -> list[Chunk]:
     with chunks_path.open() as f:
         return [Chunk(**obj) for obj in json.load(f)]
+
 
 def load_questions(path: Path) -> RagDataset:
     with path.open("r", encoding="utf-8") as f:

@@ -10,7 +10,6 @@ def main() -> None:
     try:
         Fire(CLI)
 
-
     except json.decoder.JSONDecodeError as e:
         print(f"Invalid JSON: {e}", file=sys.stderr)
         raise SystemExit(1)
@@ -30,6 +29,7 @@ def main() -> None:
     except Exception as e:
         print(f"Unexpected Error: {e}", file=sys.stderr)
         raise SystemExit(1)
+
 
 if __name__ == "__main__":
     main()

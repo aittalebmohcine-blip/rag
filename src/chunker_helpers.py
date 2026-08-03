@@ -9,6 +9,7 @@ from .Chunkers import TextChunker, PythonChunker
 TEXT_EXTENSIONS = {".md", ".txt"}
 CODE_EXTENSIONS = {".py"}
 
+
 def save_chunks(chunks: list[Chunk], output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -16,6 +17,7 @@ def save_chunks(chunks: list[Chunk], output_dir: Path) -> None:
     chunks_path = output_dir / "chunks.json"
     with chunks_path.open("w", encoding="utf-8") as f:
         json.dump(json_ready_list, f, indent=6)
+
 
 def chunk_repository(
     files: list[Path],
@@ -44,6 +46,7 @@ def chunk_repository(
         raise ValueError("No data to be processed!")
 
     return all_chunks
+
 
 def collect_files(
     root: Path,
