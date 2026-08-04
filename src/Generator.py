@@ -1,6 +1,8 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 
+from typing import Any
+
 
 class Generator:
     def __init__(self, model_name: str):
@@ -10,7 +12,7 @@ class Generator:
             dtype=torch.float32,
         )
 
-    def generate(self, prompt: str) -> str:
+    def generate(self, prompt: str) -> Any:
         messages = [
             {"role": "user", "content": prompt},
         ]

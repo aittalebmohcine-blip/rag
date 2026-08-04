@@ -1,11 +1,15 @@
 import bm25s
 
 from pathlib import Path
+from typing import Any
 
 from .searcher import load_chunks
+from .models import Chunk
 
 
-def load_index_and_chunks(processed_data_path: Path):
+def load_index_and_chunks(
+        processed_data_path: Path
+) -> tuple[bm25s.BM25, list[Chunk]]:
     try:
         retriever = bm25s.BM25.load(processed_data_path / "bm25_index")
         chunks = load_chunks(processed_data_path / "chunks.json")
@@ -17,7 +21,7 @@ def load_index_and_chunks(processed_data_path: Path):
     return retriever, chunks
 
 
-def validate_strict_pos_int(param_name: str, param_val: any) -> None:
+def validate_strict_pos_int(param_name: str, param_val: Any) -> None:
     if isinstance(param_val, bool):
         raise ValueError(
             f"{param_name} requires an integer value."
@@ -27,7 +31,7 @@ def validate_strict_pos_int(param_name: str, param_val: any) -> None:
             f"{param_name} must be a positive (non-zero) integer.")
 
 
-def validate_str_arg(param_name: str, param_val: any):
+def validate_str_arg(param_name: str, param_val: Any) -> None:
     if isinstance(param_val, bool):
         raise ValueError(
             f"{param_name} should be a string.\n"

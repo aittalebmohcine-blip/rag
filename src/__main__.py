@@ -3,7 +3,7 @@ from fire import Fire
 import sys
 import json
 
-from src.CLI import CLI
+from .CLI import CLI
 
 
 def main() -> None:

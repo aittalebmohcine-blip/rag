@@ -6,7 +6,7 @@ import json
 from .models import MinimalSource, StudentSearchResults
 
 
-def build_prompt(query: str, sources: list[MinimalSource]):
+def build_prompt(query: str, sources: list[MinimalSource]) -> str:
     prompt: str
 
     context = "\n\n".join(source_to_text(s) for s in sources[:3])
@@ -38,7 +38,7 @@ def source_to_text(source: MinimalSource) -> str:
     ]
 
 
-def load_student_search_results(path: Path):
+def load_student_search_results(path: Path) -> StudentSearchResults:
     with path.open("r", encoding="utf-8") as f:
         content = json.load(f)
     try:

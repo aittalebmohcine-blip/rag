@@ -27,7 +27,7 @@ def retrieve_ids(
     query_tokens = bm25s.tokenize(query)
     docs, scores = retriever.retrieve(query_tokens, k=k)
     doc_ids = docs[0]
-    return doc_ids
+    return list(doc_ids)
 
 
 def single_question_searcher(

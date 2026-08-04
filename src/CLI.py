@@ -100,9 +100,10 @@ class CLI:
 
     def search_dataset(
         self,
-        dataset_path: str,
+        dataset_path: str | Path,
         k: int = 5,
-        save_directory: str = "data/output/search_results/UnansweredQuestions",
+        save_directory: str | Path =
+        "data/output/search_results/UnansweredQuestions",
     ) -> None:
         validate_str_arg("dataset_path", dataset_path)
         validate_strict_pos_int("k", k)
@@ -181,9 +182,10 @@ class CLI:
 
     def answer_dataset(
         self,
-        student_search_results_path: str,
-        save_directory: str = "data/output/search_results/AnsweredQuestions"
-    ):
+        student_search_results_path: str | Path,
+        save_directory: str | Path =
+        "data/output/search_results/AnsweredQuestions"
+    ) -> None:
         validate_str_arg(
             "student_search_results_path",
             student_search_results_path
@@ -232,8 +234,8 @@ class CLI:
 
     def evaluate(
         self,
-        student_search_results_path: str,
-        dataset_path: str,
+        student_search_results_path: str | Path,
+        dataset_path: str | Path,
     ) -> None:
         validate_str_arg(
             "student_search_results_path",

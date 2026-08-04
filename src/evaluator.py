@@ -51,7 +51,7 @@ def overlap(
     if expected_length <= 0:
         return 0.0
 
-    return intersection / expected_length
+    return float(intersection / expected_length)
 
 
 def source_found(
