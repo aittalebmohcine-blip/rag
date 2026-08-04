@@ -31,7 +31,9 @@ search_dataset:
 		--save_directory "$(or $(save_directory),$(SEARCH_SAVE_DIR))"
 
 answer:
-	uv run python -m src answer --query "$(query)" --k "$(k)"
+	uv run python -m src answer \
+		--query "$(query)" \
+		--k "$(k)"
 
 
 answer_dataset:
