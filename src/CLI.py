@@ -298,7 +298,7 @@ class CLI:
             json.dump(results_and_answer.model_dump(
                 mode="json"), file, indent=4)
         print(
-            f"Saved student_search_results to {save_path}"
+            f"Saved student_search_results_and_answer to {save_path}"
         )
 
     def evaluate(
