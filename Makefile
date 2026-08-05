@@ -20,7 +20,6 @@ help:
 	@printf "  debug           Run the project entrypoint under pdb\n"
 	@printf "  clean           Remove Python cache/build artifacts\n"
 	@printf "  lint            Run flake8 and mypy with the requested options\n"
-	@printf "  lint-strict     Run flake8 and mypy --strict\n"
 
 install:
 	$(UV) sync
