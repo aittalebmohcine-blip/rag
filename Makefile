@@ -72,5 +72,5 @@ clean:
 	find . -type f \( -name "*.pyc" -o -name "*.pyo" \) -delete
 
 lint:
-	flake8 .
-	mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+	flake8 src
+	mypy src --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
