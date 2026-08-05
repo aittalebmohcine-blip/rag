@@ -142,7 +142,13 @@ class CLI:
             search_results=results, k=k)
         print("Search results generated.\n")
 
-        save_directory.mkdir(parents=True, exist_ok=True)
+        try:
+            save_directory.mkdir(parents=True, exist_ok=True)
+        except FileExistsError:
+            raise ValueError(
+                f"Unable to created the directory '{save_directory}'."
+                " A file exists with the same path!"
+            )
         print(f"{save_directory} created.\n")
         save_path = save_directory / dataset_path.name
         with save_path.open("w", encoding="utf-8") as file:
@@ -222,7 +228,13 @@ class CLI:
             k=student_search_results.k
         )
 
-        save_directory.mkdir(parents=True, exist_ok=True)
+        try:
+            save_directory.mkdir(parents=True, exist_ok=True)
+        except FileExistsError:
+            raise ValueError(
+                f"Unable to created the directory '{save_directory}'."
+                " A file exists with the same path!"
+            )
         print(f"\n{save_directory} created.\n")
         save_path = save_directory / student_search_results_path.name
         with save_path.open("w", encoding="utf-8") as file:
