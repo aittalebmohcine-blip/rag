@@ -11,6 +11,15 @@ CODE_EXTENSIONS = {".py"}
 
 
 def save_chunks(chunks: list[Chunk], output_dir: Path) -> None:
+    """Persist a list of chunk objects to a JSON file.
+
+    Args:
+        chunks: Chunk objects to serialize.
+        output_dir: Directory where the serialized chunk data should be saved.
+
+    Returns:
+        None: Writes the chunk payload to `chunks.json` in the output directory.
+    """
     output_dir.mkdir(parents=True, exist_ok=True)
 
     json_ready_list = [chunk.model_dump(mode="json") for chunk in chunks]
@@ -24,6 +33,19 @@ def chunk_repository(
     chunk_size: int,
     overlap: int,
 ) -> list[Chunk]:
+    """Chunk every supported file in a repository and return all resulting chunks.
+
+    Args:
+        files: Source files to process.
+        chunk_size: Maximum size of a single chunk in characters.
+        overlap: Number of overlapping characters between adjacent chunks.
+
+    Returns:
+        list[Chunk]: A flattened list of all chunks produced from the repository.
+
+    Raises:
+        ValueError: If no chunks were produced.
+    """
 
     text_chunker = TextChunker(chunk_size, overlap)
     python_chunker = PythonChunker(chunk_size, overlap)  # temporary
@@ -52,6 +74,15 @@ def collect_files(
     root: Path,
     extensions: set[str],
 ) -> list[Path]:
+    """Collect all files under a root path whose suffix is in the supported set.
+
+    Args:
+        root: Directory tree to scan.
+        extensions: Allowed file suffixes to include.
+
+    Returns:
+        list[Path]: Matching file paths discovered recursively.
+    """
 
     return [
         file_path

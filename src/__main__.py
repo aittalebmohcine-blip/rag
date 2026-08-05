@@ -7,6 +7,12 @@ from .CLI import CLI
 
 
 def main() -> None:
+    """Run the CLI entrypoint exposed through the Fire library.
+
+    Returns:
+        None: This function starts the command-line interface and returns
+            only after the CLI terminates.
+    """
     Fire(CLI)
 
 

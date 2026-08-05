@@ -5,8 +5,17 @@ from .models import Chunk
 
 
 class TextChunker(Chunker):
+    """Chunker for plain text content using a fixed-size sliding window."""
 
     def chunk(self, text: str) -> list[Chunk]:
+        """Split plain text into overlapping chunks.
+
+        Args:
+            text: Raw text content to segment.
+
+        Returns:
+            list[Chunk]: Chunk objects produced from the text.
+        """
         return self.chunk_with_offset(text, 0)
 
     def chunk_with_offset(
@@ -14,6 +23,15 @@ class TextChunker(Chunker):
         text: str,
         offset: int,
     ) -> list[Chunk]:
+        """Chunk text while preserving absolute character offsets.
+
+        Args:
+            text: The string to split.
+            offset: Starting character offset for the chunk positions.
+
+        Returns:
+            list[Chunk]: Chunks aligned to the provided global offset.
+        """
         chunks: list[Chunk] = []
         for i in range(0, len(text), self.step):
             end = min(i + self.chunk_size, len(text))
@@ -30,8 +48,18 @@ class TextChunker(Chunker):
 
 
 class PythonChunker(Chunker):
+    """Chunker that prefers code-structure boundaries for Python source files."""
 
     def chunk(self, text: str) -> list[Chunk]:
+        """Chunk Python source code using AST function and class boundaries.
+
+        Args:
+            text: Python source text to analyze.
+
+        Returns:
+            list[Chunk]: Structured chunks derived from function and class nodes,
+                or a fallback text chunking result if parsing fails.
+        """
         try:
             tree = ast.parse(text)
         except SyntaxError:
@@ -72,6 +100,16 @@ class PythonChunker(Chunker):
     def get_absolute_char_positions(
         node: ast.stmt, line_offsets: list[int]
     ) -> tuple[int, int]:
+        """Convert AST node line/column positions into absolute character offsets.
+
+        Args:
+            node: AST statement node to convert.
+            line_offsets: Prefix sums of each line length in the source text.
+
+        Returns:
+            tuple[int, int]: The inclusive start and exclusive end character
+                offsets for the node.
+        """
         # ast lines are 1-indexed; convert to 0-indexed index
         start_line_idx = node.lineno - 1
         start_col = node.col_offset

@@ -5,7 +5,18 @@ from typing import Any
 
 
 class Generator:
+    """Wrapper around a causal language model used to produce answers from prompts.
+
+    Args:
+        model_name: Hugging Face model identifier for the tokenizer and model.
+    """
+
     def __init__(self, model_name: str):
+        """Load the tokenizer and model for inference.
+
+        Args:
+            model_name: Name of the model to load from the Hugging Face hub.
+        """
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name,
@@ -13,6 +24,14 @@ class Generator:
         )
 
     def generate(self, prompt: str) -> Any:
+        """Generate a text completion for the supplied prompt.
+
+        Args:
+            prompt: User question or RAG prompt text sent to the model.
+
+        Returns:
+            Any: Generated completion text decoded from the model output.
+        """
         messages = [
             {"role": "user", "content": prompt},
         ]

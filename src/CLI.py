@@ -36,10 +36,25 @@ OVERLAP_RATIO = 0.15
 
 
 class CLI:
+    """Command-line interface for indexing, searching, answering, and evaluating RAG data.
+
+    The CLI exposes the workflow steps used for the repository ingestion and
+    retrieval pipeline.
+    """
+
     def index(
         self,
         max_chunk_size: int = 2000
     ) -> None:
+        """Build the BM25 index and chunked corpus for repository data.
+
+        Args:
+            max_chunk_size: Maximum character size used for each chunk.
+
+        Returns:
+            None: Saves processed chunks and the BM25 index to the configured
+                data directory.
+        """
         validate_strict_pos_int("max_chunk_size", max_chunk_size)
         if max_chunk_size > 2000:
             raise ValueError("max_chunk_size cannot exceed 2000.")
@@ -81,6 +96,15 @@ class CLI:
         query: str,
         k: int = 5,
     ) -> None:
+        """Search the processed index for a single query string.
+
+        Args:
+            query: Natural-language question to search for.
+            k: Number of retrieved sources to return.
+
+        Returns:
+            None: Prints the retrieved sources to the console.
+        """
         validate_strict_pos_int("k", k)
         validate_str_arg("query", query)
         query = str(query)
@@ -105,6 +129,17 @@ class CLI:
         save_directory: str | Path =
         "data/output/search_results/UnansweredQuestions",
     ) -> None:
+        """Run retrieval over an entire dataset and persist the results.
+
+        Args:
+            dataset_path: Path to the dataset file containing questions.
+            k: Number of sources to retrieve per question.
+            save_directory: Directory where the JSON search results should be
+                written.
+
+        Returns:
+            None: Writes JSON results for the dataset to disk.
+        """
         validate_str_arg("dataset_path", dataset_path)
         validate_strict_pos_int("k", k)
         validate_str_arg("save_directory", save_directory)
@@ -149,7 +184,7 @@ class CLI:
                 f"Unable to created the directory '{save_directory}'."
                 " A file exists with the same path!"
             )
-        print(f"{save_directory} created.\n")
+
         save_path = save_directory / dataset_path.name
         with save_path.open("w", encoding="utf-8") as file:
             json.dump(student_search_results.model_dump(
@@ -163,6 +198,15 @@ class CLI:
         query: str,
         k: int = 5,
     ) -> None:
+        """Generate an answer for a single question using the indexed sources.
+
+        Args:
+            query: Question to answer.
+            k: Number of relevant sources to include in the prompt.
+
+        Returns:
+            None: Prints the generated answer to the console.
+        """
         validate_str_arg("query", query)
         validate_strict_pos_int("k", k)
 
@@ -192,6 +236,17 @@ class CLI:
         save_directory: str | Path =
         "data/output/search_results/AnsweredQuestions"
     ) -> None:
+        """Answer every question in a search-result dataset and save the output.
+
+        Args:
+            student_search_results_path: Path to a JSON file containing
+                retrieved search results.
+            save_directory: Directory where the answered dataset should be
+                written.
+
+        Returns:
+            None: Writes the answered dataset to disk.
+        """
         validate_str_arg(
             "student_search_results_path",
             student_search_results_path
@@ -249,6 +304,15 @@ class CLI:
         student_search_results_path: str | Path,
         dataset_path: str | Path,
     ) -> None:
+        """Compute retrieval recall for a student search-results file.
+
+        Args:
+            student_search_results_path: Path to the predicted retrieval output.
+            dataset_path: Path to the ground-truth dataset.
+
+        Returns:
+            None: Prints the recall score for the supplied results.
+        """
         validate_str_arg(
             "student_search_results_path",
             student_search_results_path

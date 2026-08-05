@@ -7,6 +7,15 @@ from .models import MinimalSource, StudentSearchResults
 
 
 def build_prompt(query: str, sources: list[MinimalSource]) -> str:
+    """Construct a prompt for an LLM answerer using the top-ranked sources.
+
+    Args:
+        query: User question to answer.
+        sources: Ranked source excerpts to include as context.
+
+    Returns:
+        str: Prompt string with the retrieved context and question.
+    """
     prompt: str
 
     context = "\n\n".join(source_to_text(s) for s in sources[:3])
@@ -29,6 +38,14 @@ Answer:
 
 
 def source_to_text(source: MinimalSource) -> str:
+    """Read the text content for a source span and return just that span.
+
+    Args:
+        source: Minimal source reference including file path and character range.
+
+    Returns:
+        str: The substring covering the requested source span.
+    """
     with open(source.file_path, encoding="utf-8") as f:
         text = f.read()
 
@@ -39,6 +56,17 @@ def source_to_text(source: MinimalSource) -> str:
 
 
 def load_student_search_results(path: Path) -> StudentSearchResults:
+    """Load and validate a student search-results JSON payload.
+
+    Args:
+        path: Path to the JSON file describing student retrieval results.
+
+    Returns:
+        StudentSearchResults: Deserialized model instance.
+
+    Raises:
+        ValueError: If the file does not conform to the expected schema.
+    """
     with path.open("r", encoding="utf-8") as f:
         content = json.load(f)
     try:
