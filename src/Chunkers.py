@@ -48,7 +48,8 @@ class TextChunker(Chunker):
 
 
 class PythonChunker(Chunker):
-    """Chunker that prefers code-structure boundaries for Python source files."""
+    """Chunker that prefers code-structure boundaries
+    for Python source files."""
 
     def chunk(self, text: str) -> list[Chunk]:
         """Chunk Python source code using AST function and class boundaries.
@@ -57,7 +58,8 @@ class PythonChunker(Chunker):
             text: Python source text to analyze.
 
         Returns:
-            list[Chunk]: Structured chunks derived from function and class nodes,
+            list[Chunk]:
+                Structured chunks derived from function and class nodes,
                 or a fallback text chunking result if parsing fails.
         """
         try:
@@ -100,7 +102,8 @@ class PythonChunker(Chunker):
     def get_absolute_char_positions(
         node: ast.stmt, line_offsets: list[int]
     ) -> tuple[int, int]:
-        """Convert AST node line/column positions into absolute character offsets.
+        """Convert AST node line/column positions into
+        absolute character offsets.
 
         Args:
             node: AST statement node to convert.

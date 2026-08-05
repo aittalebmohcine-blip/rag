@@ -41,7 +41,8 @@ def source_to_text(source: MinimalSource) -> str:
     """Read the text content for a source span and return just that span.
 
     Args:
-        source: Minimal source reference including file path and character range.
+        source:
+            Minimal source reference including file path and character range.
 
     Returns:
         str: The substring covering the requested source span.

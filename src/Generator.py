@@ -5,7 +5,8 @@ from typing import Any
 
 
 class Generator:
-    """Wrapper around a causal language model used to produce answers from prompts.
+    """Wrapper around a causal language model
+    used to produce answers from prompts.
 
     Args:
         model_name: Hugging Face model identifier for the tokenizer and model.

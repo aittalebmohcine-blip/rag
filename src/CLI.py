@@ -36,7 +36,8 @@ OVERLAP_RATIO = 0.15
 
 
 class CLI:
-    """Command-line interface for indexing, searching, answering, and evaluating RAG data.
+    """Command-line interface for
+    indexing, searching, answering, and evaluating RAG data.
 
     The CLI exposes the workflow steps used for the repository ingestion and
     retrieval pipeline.
@@ -236,7 +237,8 @@ class CLI:
         save_directory: str | Path =
         "data/output/search_results/AnsweredQuestions"
     ) -> None:
-        """Answer every question in a search-result dataset and save the output.
+        """Answer every question in a search-result dataset
+        and save the output.
 
         Args:
             student_search_results_path: Path to a JSON file containing
@@ -307,7 +309,8 @@ class CLI:
         """Compute retrieval recall for a student search-results file.
 
         Args:
-            student_search_results_path: Path to the predicted retrieval output.
+            student_search_results_path:
+                Path to the predicted retrieval output.
             dataset_path: Path to the ground-truth dataset.
 
         Returns:

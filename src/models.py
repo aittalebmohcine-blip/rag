@@ -13,7 +13,8 @@ class MinimalSource(BaseModel):
 
 
 class Chunk(BaseModel):
-    """Text chunk with its absolute start/end offsets and optional file path."""
+    """Text chunk with its absolute start/end offsets
+    and optional file path."""
 
     text: str
     start: int = Field(ge=0)

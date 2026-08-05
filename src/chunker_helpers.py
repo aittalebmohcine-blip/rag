@@ -18,7 +18,8 @@ def save_chunks(chunks: list[Chunk], output_dir: Path) -> None:
         output_dir: Directory where the serialized chunk data should be saved.
 
     Returns:
-        None: Writes the chunk payload to `chunks.json` in the output directory.
+        None:
+            Writes the chunk payload to `chunks.json` in the output directory.
     """
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -33,7 +34,8 @@ def chunk_repository(
     chunk_size: int,
     overlap: int,
 ) -> list[Chunk]:
-    """Chunk every supported file in a repository and return all resulting chunks.
+    """Chunk every supported file in a repository
+    and return all resulting chunks.
 
     Args:
         files: Source files to process.
@@ -41,7 +43,8 @@ def chunk_repository(
         overlap: Number of overlapping characters between adjacent chunks.
 
     Returns:
-        list[Chunk]: A flattened list of all chunks produced from the repository.
+        list[Chunk]:
+            A flattened list of all chunks produced from the repository.
 
     Raises:
         ValueError: If no chunks were produced.
@@ -74,7 +77,8 @@ def collect_files(
     root: Path,
     extensions: set[str],
 ) -> list[Path]:
-    """Collect all files under a root path whose suffix is in the supported set.
+    """Collect all files under a root path
+    whose suffix is in the supported set.
 
     Args:
         root: Directory tree to scan.

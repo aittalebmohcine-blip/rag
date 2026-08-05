@@ -20,7 +20,8 @@ def load_index_and_chunks(
         tuple[bm25s.BM25, list[Chunk]]: The loaded retriever and chunk corpus.
 
     Raises:
-        FileNotFoundError: If the processed data directory is invalid or missing.
+        FileNotFoundError:
+            If the processed data directory is invalid or missing.
     """
     try:
         retriever = bm25s.BM25.load(processed_data_path / "bm25_index")
