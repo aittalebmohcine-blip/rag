@@ -14,12 +14,18 @@ dataset_path ?=
 student_search_results_path ?=
 
 help:
-	@printf "Available targets:\n"
-	@printf "  install         Install project dependencies with uv\n"
-	@printf "  run             Run the project entrypoint\n"
-	@printf "  debug           Run the project entrypoint under pdb\n"
-	@printf "  clean           Remove Python cache/build artifacts\n"
-	@printf "  lint            Run flake8 and mypy with the requested options\n"
+	@echo "Available targets:"
+	@echo "  install         Install project dependencies using uv"
+	@echo "  run             Run the project entry point"
+	@echo "  debug           Run the project under the Python debugger (pdb)"
+	@echo "  index           Build the searchable index from data/raw/"
+	@echo "  search          Search the index for a single query"
+	@echo "  search_dataset  Search an entire dataset and save the results"
+	@echo "  answer          Answer a single query using retrieved context"
+	@echo "  answer_dataset  Generate answers for a search results dataset"
+	@echo "  evaluate        Evaluate retrieval results against ground truth"
+	@echo "  lint            Run flake8 and mypy checks"
+	@echo "  clean           Remove Python cache and build artifacts"
 
 install:
 	$(UV) sync
@@ -61,9 +67,6 @@ evaluate:
 		--dataset_path "$(dataset_path)"
 
 clean:
-	rm -rf __pycache__
-	rm -rf .pytest_cache
-	rm -rf .mypy_cache
 	rm -rf .tox
 	rm -rf build
 	rm -rf dist
