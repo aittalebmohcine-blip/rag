@@ -67,11 +67,7 @@ evaluate:
 		--dataset_path "$(dataset_path)"
 
 clean:
-	rm -rf .tox
-	rm -rf build
-	rm -rf dist
-	rm -rf *.egg-info
-	find . -type d \( -name "__pycache__" -o -name ".pytest_cache" -o -name ".mypy_cache" \) -prune -exec rm -rf {} +
+	find . -type d \( -name "__pycache__" -o -name ".mypy_cache" \) -exec rm -rf {} +
 	find . -type f \( -name "*.pyc" -o -name "*.pyo" \) -delete
 
 lint:
