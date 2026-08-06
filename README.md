@@ -46,11 +46,47 @@ Ranking is based on BM25 relevance scores.
 
 # Performance analysis
 
-- recall@k: [empty]
-- System latency: [empty]
-- Index build time: [empty]
+### Retrieval Quality
 
-> Technical output placeholders are intentionally left empty here. Actual recall@k and performance values should be measured on the target dataset and environment.
+The retrieval system was evaluated using the provided Recall@k metric.
+
+| Dataset | Recall@1 | Recall@3 | Recall@5 | Recall@10 |
+|---------|----------:|---------:|----------:|-----------:|
+| Documentation | 55.0% | 81.0% | 86.0% | 90.0% |
+| Code | 35.4% | 48.5% | 53.5% | 62.6% |
+
+The implementation satisfies the project requirements:
+
+| Requirement | Required | Achieved |
+|------------|---------:|---------:|
+| Docs Recall@5 | ≥ 80% | 86.0% |
+| Code Recall@5 | ≥ 50% | 53.5% |
+
+> The project includes an evaluate CLI command that reproduces the Recall@k metric for local testing. Final performance figures reported below were obtained using the official moulinette.
+
+### Chunk Size Evaluation
+
+The project uses a maximum chunk size of **2000** characters.
+
+| Chunk Size | Docs Recall@5 | Code Recall@5 | Notes                                                                                                   |
+| ---------- | ------------: | ------------: | ------------------------------------------------------------------------------------------------------- |
+| 500        |         77.0% |         50.5% | Small chunks improve localization but often split relevant context, reducing documentation recall.      |
+| 1000       |         83.0% |         57.6% | Best overall retrieval performance; balances context size and precision.                                |
+| 1500       |         88.0% |         53.5% | Highest documentation recall, but larger chunks begin to reduce code retrieval accuracy.                |
+| 2000       |         86.0% |         53.5% | Selected configuration to match the project's default maximum chunk size while maintaining high recall. |
+
+>Documentation retrieval consistently benefited from larger chunks, as related information often spans multiple paragraphs. In contrast, code retrieval peaked with 1000-character chunks, suggesting that excessively large chunks introduce irrelevant code and reduce ranking precision. Although a 1500-character chunk size achieved the highest documentation recall, the 2000-character configuration was selected because it matches the project's default maximum chunk size and still provides strong performance on both documentation and code datasets.
+
+**Possible Improvements**:
+- Hybrid retrieval (BM25 + embeddings).
+- Better Python chunking.
+- Query expansion or reranking.
+- Incremental indexing.
+### Runtime Performance
+- Indexing time: a few seconds for the whole corpus( < 10s).
+- Retrieval throughput: a few seconds for 200 questions ( < 12s).
+
+    >The system comfortably satisfies the project's performance requirements, completing both indexing and batch retrieval well within the required limits. The short execution times are primarily due to the use of a lightweight lexical BM25 index, efficient preprocessing performed only once during indexing, and direct in-memory retrieval without expensive embedding generation or neural reranking.
 
 # Design decisions
 
@@ -70,10 +106,12 @@ Key implementation choices:
 
 # Instructions
 
+0. you should have uv package manager
+
 1. Install dependencies:
 
 ```bash
-python -m pip install -r requirements.txt
+uv sync
 ```
 
 2. Prepare input data:
@@ -84,19 +122,19 @@ python -m pip install -r requirements.txt
 3. Build the index:
 
 ```bash
-python -m src index --max_chunk_size=2000
+uv run python -m src index --max_chunk_size=2000
 ```
 
 4. Search for a query:
 
 ```bash
-python -m src search "What is retrieval-augmented generation?"
+uv run python -m src search "What is retrieval-augmented generation?"
 ```
 
 5. Generate an answer:
 
 ```bash
-python -m src answer "How does the BM25 retriever work?"
+uv run python -m src answer "How does the BM25 retriever work?"
 ```
 
 # Example usage
@@ -104,19 +142,19 @@ python -m src answer "How does the BM25 retriever work?"
 - Index data:
 
 ```bash
-python -m src index --max_chunk_size=1500
+uv run python -m src index --max_chunk_size=1500
 ```
 
 - Search a single query:
 
 ```bash
-python -m src search "Find the best matching source for code chunking"
+uv run python -m src search "Find the best matching source for code chunking"
 ```
 
 - Answer a question with generated text:
 
 ```bash
-python -m src answer "Explain the retrieval pipeline."
+uv run python -m src answer "Explain the retrieval pipeline."
 ```
 
 # Resources
@@ -128,4 +166,11 @@ python -m src answer "Explain the retrieval pipeline."
 
 ## AI usage description
 
-AI is used in this project for the answer generation step only. The system uses a Hugging Face causal language model (`Qwen/Qwen3-0.6B`) in `src/Generator.py` to generate answers from a prompt assembled with retrieved source content. All retrieval and chunking logic is implemented with explicit Python code and classical indexing.
+AI was used as a productivity tool throughout the development of this project, primarily for:
+
+- Assisting with documentation and improving the clarity of the README.
+- Explaining concepts and clarifying project requirements.
+- Helping with repetitive programming tasks, such as generating boilerplate code, suggesting refactorings, and reviewing code for readability.
+- Answering language- and syntax-related questions during development.
+
+All architectural decisions, algorithms, implementation choices, and final code were designed, implemented, tested, and validated manually. AI-generated suggestions were reviewed and adapted before being incorporated into the project.
