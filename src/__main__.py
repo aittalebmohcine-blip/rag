@@ -1,9 +1,5 @@
-from fire import Fire
-
 import sys
 import json
-
-from .CLI import CLI
 
 
 def main() -> None:
@@ -13,6 +9,10 @@ def main() -> None:
         None: This function starts the command-line interface and returns
             only after the CLI terminates.
     """
+
+    from fire import Fire
+    from .CLI import CLI
+
     Fire(CLI)
 
 
