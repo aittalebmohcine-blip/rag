@@ -57,8 +57,11 @@ class CLI:
                 data directory.
         """
         validate_strict_pos_int("max_chunk_size", max_chunk_size)
-        if max_chunk_size > 2000:
-            raise ValueError("max_chunk_size cannot exceed 2000.")
+        if not 1 < max_chunk_size <= 2000:
+            raise ValueError(
+                "max_chunk_size should be greater than 1, "
+                "and cannot exceed 2000."
+            )
 
         overlap = int(max_chunk_size * OVERLAP_RATIO)
 
