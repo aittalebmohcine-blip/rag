@@ -20,6 +20,10 @@ if __name__ == "__main__":
     try:
         main()
 
+    except KeyboardInterrupt:
+        print("\nAborting...")
+        raise SystemExit(1)
+
     except json.decoder.JSONDecodeError as e:
         print(f"\nInvalid JSON: {e}", file=sys.stderr)
         raise SystemExit(1)
