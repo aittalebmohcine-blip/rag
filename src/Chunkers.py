@@ -79,7 +79,7 @@ class PythonChunker(Chunker):
             self.chunk_size,
             self.overlap,
         )
-        for node in ast.walk(tree):
+        for node in tree.body:
             if not isinstance(node, (ast.FunctionDef, ast.ClassDef)):
                 continue
             start_char, end_char = self.get_absolute_char_positions(
