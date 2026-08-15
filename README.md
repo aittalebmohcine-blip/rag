@@ -68,14 +68,15 @@ The implementation satisfies the project requirements:
 
 The project uses a maximum chunk size of **2000** characters.
 
-| Chunk Size | Docs Recall@5 | Code Recall@5 | Notes                                                                                                   |
-| ---------- | ------------: | ------------: | ------------------------------------------------------------------------------------------------------- |
-| 500        |         81.0% |         48.5% | Small chunks improve localization but often split relevant context, reducing documentation recall.      |
-| 1000       |         87.0% |         55.6% | Best overall retrieval performance; balances context size and precision.                                |
-| 1500       |         88.0% |         56.6% | Highest documentation recall, but larger chunks begin to reduce code retrieval accuracy.                |
-| 2000       |         87.0% |         53.5% | Selected configuration to match the project's default maximum chunk size while maintaining high recall. |
+| Chunk Size | Docs Recall@5 | Code Recall@5 | Notes                                                                                                                                                                 |
+| ---------- | ------------: | ------------: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 500        |         81.0% |         48.5% | Small chunks provide precise localization but can split relevant context, limiting retrieval performance.                                                             |
+| 1000       |         87.0% |         55.6% | Provides a good balance between context size and retrieval precision, with strong performance on both datasets.                                                       |
+| 1500       |         88.0% |         56.6% | Achieves the highest recall on both documentation and code, indicating that larger chunks can preserve more relevant context.                                         |
+| 2000       |         87.0% |         53.5% | Slightly lower recall than 1500, but selected as the final configuration because it matches the project's default maximum chunk size while maintaining strong recall. |
 
->Documentation retrieval consistently benefited from larger chunks, as related information often spans multiple paragraphs. In contrast, code retrieval peaked with 1000-character chunks, suggesting that excessively large chunks introduce irrelevant code and reduce ranking precision. Although a 1500-character chunk size achieved the highest documentation recall, the 2000-character configuration was selected because it matches the project's default maximum chunk size and still provides strong performance on both documentation and code datasets.
+
+>Documentation retrieval generally benefits from larger chunks, as relevant information can span multiple paragraphs. Code retrieval follows a similar trend in these experiments, with the best performance achieved at 1500 characters. However, increasing the chunk size from 1500 to 2000 results in a small decrease in both documentation and code recall. The 2000-character configuration was selected as the final configuration because it matches the project's default maximum chunk size while still achieving strong performance: 87.0% recall@5 on documentation and 53.5% on code. These results also exceed the project's required minimum of 80% for documentation and 50% for code.
 
 **Possible Improvements**:
 - Hybrid retrieval (BM25 + embeddings).
