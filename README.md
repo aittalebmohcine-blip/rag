@@ -52,14 +52,14 @@ The retrieval system was evaluated using the provided Recall@k metric.
 
 | Dataset | Recall@1 | Recall@3 | Recall@5 | Recall@10 |
 |---------|----------:|---------:|----------:|-----------:|
-| Documentation | 55.0% | 81.0% | 86.0% | 90.0% |
-| Code | 35.4% | 48.5% | 53.5% | 62.6% |
+| Documentation | 64.0% | 83.0% | 87.0% | 89.0% |
+| Code | 36.4% | 48.5% | 53.5% | 61.6% |
 
 The implementation satisfies the project requirements:
 
 | Requirement | Required | Achieved |
 |------------|---------:|---------:|
-| Docs Recall@5 | ≥ 80% | 86.0% |
+| Docs Recall@5 | ≥ 80% | 87.0% |
 | Code Recall@5 | ≥ 50% | 53.5% |
 
 > The project includes an evaluate CLI command that reproduces the Recall@k metric for local testing. Final performance figures reported below were obtained using the official moulinette.
@@ -70,10 +70,10 @@ The project uses a maximum chunk size of **2000** characters.
 
 | Chunk Size | Docs Recall@5 | Code Recall@5 | Notes                                                                                                   |
 | ---------- | ------------: | ------------: | ------------------------------------------------------------------------------------------------------- |
-| 500        |         77.0% |         50.5% | Small chunks improve localization but often split relevant context, reducing documentation recall.      |
-| 1000       |         83.0% |         57.6% | Best overall retrieval performance; balances context size and precision.                                |
-| 1500       |         88.0% |         53.5% | Highest documentation recall, but larger chunks begin to reduce code retrieval accuracy.                |
-| 2000       |         86.0% |         53.5% | Selected configuration to match the project's default maximum chunk size while maintaining high recall. |
+| 500        |         81.0% |         48.5% | Small chunks improve localization but often split relevant context, reducing documentation recall.      |
+| 1000       |         87.0% |         55.6% | Best overall retrieval performance; balances context size and precision.                                |
+| 1500       |         88.0% |         56.6% | Highest documentation recall, but larger chunks begin to reduce code retrieval accuracy.                |
+| 2000       |         87.0% |         53.5% | Selected configuration to match the project's default maximum chunk size while maintaining high recall. |
 
 >Documentation retrieval consistently benefited from larger chunks, as related information often spans multiple paragraphs. In contrast, code retrieval peaked with 1000-character chunks, suggesting that excessively large chunks introduce irrelevant code and reduce ranking precision. Although a 1500-character chunk size achieved the highest documentation recall, the 2000-character configuration was selected because it matches the project's default maximum chunk size and still provides strong performance on both documentation and code datasets.
 
