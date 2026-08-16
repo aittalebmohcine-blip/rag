@@ -47,8 +47,24 @@ def source_to_text(source: MinimalSource) -> str:
     Returns:
         str: The substring covering the requested source span.
     """
-    with open(source.file_path, encoding="utf-8") as f:
-        text = f.read()
+    try:
+        with open(source.file_path, encoding="utf-8") as f:
+            text = f.read()
+    except FileNotFoundError:
+        raise FileNotFoundError(
+            "could not build a prompt because a source file was not found: "
+            f"Source file '{source.file_path}' not found."
+        )
+    except IsADirectoryError:
+        raise IsADirectoryError(
+            "could not build a prompt because a source file was not found: "
+            f"Source file '{source.file_path}' is a directory."
+        )
+    except Exception:
+        raise RuntimeError(
+            "could not build a prompt because a source file could not be read: "
+            f"Source file '{source.file_path}' could not be read"
+        )
 
     return text[
         source.first_character_index:
