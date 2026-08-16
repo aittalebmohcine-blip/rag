@@ -62,7 +62,8 @@ def source_to_text(source: MinimalSource) -> str:
         )
     except Exception:
         raise RuntimeError(
-            "could not build a prompt because a source file could not be read: "
+            "could not build a prompt "
+            "because a source file could not be read: "
             f"Source file '{source.file_path}' could not be read"
         )
 
